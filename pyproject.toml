@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "Fringes-GUI"
-version = "0.1.0"
-description = "Simple graphical user interface for the 'fringes' package."
+version = "0.1.1"
+description = "Graphical user interface for the 'fringes' package."
+license = "CC-BY-NC-SA-4.0"
 authors = ["Christian Kludt"]
 readme = "README.md"
+repository = "https://github.com/comimag/fringes-gui"
+keywords = ["phase shifting", "fringe analysis", "fringe projection", "deflectometry", "computational imaging"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.11"

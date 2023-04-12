@@ -20,6 +20,7 @@ fgui.run()
 ```
 
 Now the graphical user interface should appear:
+
 ![Screenshot](docs/GUI.png)\
 Screenshot of the GUI.
 
