@@ -104,7 +104,8 @@ def set_logic(gui):
                             gui.fringes.logger.error("Files in list dint't match; terminated loading data.")
                             return
 
-                    setattr(gui.con, root, frng.vshape(sequence))
+                    sequence = frng.vshape(sequence)
+                    setattr(gui.con, root, sequence)
                     gui.fringes.logger.info(f"Loaded data from '{path}'.")
 
                     view(getattr(gui.con, root))

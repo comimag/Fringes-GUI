@@ -38,15 +38,19 @@ decide which features to display based on the current user level. The purpose
 is mainly to ensure that the GUI is not cluttered with information that is not
 intended at the current visibility level. The following criteria have been used
 for the assignment of the recommended visibility:
-- Beginner: Features that should be visible for all users via the GUI. This
-is the default visibility. The number of features with 'Beginner' visibility
-should be limited to all basic features so the GUI display is well-organized
-and easy to use.
-- Expert: Features that require a more in-depth knowledge of the system
-functionality. This is the preferred visibility level for all advanced features.
-- Guru: Advanced features that usually only people with a sound background in phase shifting can make good use of.
-- Experimental: New features that have not been tested yet
-and the system might probably crash at some point.
+- Beginner:\
+  Features that should be visible for all users via the GUI. This
+  is the default visibility. The number of features with 'Beginner' visibility
+  should be limited to all basic features so the GUI display is well-organized
+  and easy to use.
+- Expert:\
+  Features that require a more in-depth knowledge of the system
+  functionality. This is the preferred visibility level for all advanced features.
+- Guru:\
+  Advanced features that usually only people with a sound background in phase shifting can make good use of.
+- Experimental:\
+  New features that have not been tested yet
+  and are likely to crash the system at some point.
 
 ### Function Buttons
 In the bottem left corner you will find buttons for the associated methods of the `Fringes` class.
@@ -55,7 +59,7 @@ The buttons are only active if the necessary data has been enoded, decoded or lo
 
 ### Viewer
 In the center resides the viewer.
-If float data is to be displayed, nan is replaced by zeros.
+If float data is to be displayed, `nan` is replaced by zeros.
 
 ### Data
 In the top right corner the data widget is located.
@@ -78,7 +82,7 @@ If you want to decode a datum with a different name (e.g. one that you just load
 select its name in the table and klick `Set data (to be decoded)`.
 
 ### Log
-Here the logging of the `Fringes` class is displayed.
+The logging of the `Fringes` class is displayed here.
 The logging level can be set in the [Parameter Tree](#parameter-tree).
 
 ## License

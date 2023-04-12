@@ -24,7 +24,8 @@ class FringesGUI(QApplication):
 
         myappid = "Fringes-GUI"  # arbitrary string
         try:
-            version = toml.load("..\\pyproject.toml")["tool"]["poetry"]["version"]
+            fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
+            version = toml.load(fname)["tool"]["poetry"]["version"]
             myappid += "_" + version
         except Exception:
             pass
@@ -59,7 +60,7 @@ class FringesGUI(QApplication):
 
         self.win.showMaximized()  # self.win.showFullScreen()
 
-        self.win.setWindowIcon(QtGui.QIcon("spirals.png"))
+        self.win.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "spirals.png")))
 
         self.win.setWindowTitle(myappid)
 
