@@ -104,25 +104,28 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 
 [[package]]
 name = "fringes"
-version = "0.1.5"
+version = "0.1.6"
 description = "Phase shifting algorithms for encoding and decoding sinusoidal fringe patterns."
 category = "main"
 optional = false
-python-versions = ">=3.10,<3.11"
-files = [
-    {file = "fringes-0.1.5-py3-none-any.whl", hash = "sha256:6f4968c5c66db8dee54ecd71788f1cb43cc7fb22a810a6f74e7969e56fd99533"},
-    {file = "fringes-0.1.5.tar.gz", hash = "sha256:6154e656d4511beeff0db41ff5ea94376cda5228772bfe557483377e1b2deaab"},
-]
+python-versions = "^3.10,<3.11"
+files = []
+develop = true
 
 [package.dependencies]
-asdf = ">=2.14.3,<3.0.0"
-numba = ">=0.56.4,<0.57.0"
-opencv-contrib-python = ">=4.7.0,<5.0.0"
-pyyaml = ">=6.0,<7.0"
-scikit-image = ">=0.19.3,<0.20.0"
-scipy = ">=1.10.0,<2.0.0"
-si-prefix = ">=1.2.2,<2.0.0"
-sympy = ">=1.11.1,<2.0.0"
+asdf = "^2.14.3"
+numba = "^0.56.4"
+opencv-contrib-python = "^4.7.0"
+pyyaml = "^6.0"
+scikit-image = "^0.19.3"
+scipy = "^1.10.0"
+si-prefix = "^1.2.2"
+sympy = "^1.11.1"
+toml = "^0.10.2"
+
+[package.source]
+type = "directory"
+url = "../fringes"
 
 [[package]]
 name = "imageio"
@@ -832,14 +835,14 @@ mpmath = ">=0.19"
 
 [[package]]
 name = "tifffile"
-version = "2023.3.21"
+version = "2023.4.12"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "tifffile-2023.3.21-py3-none-any.whl", hash = "sha256:b83af3dbe914663aeaf250e9751ae503154f2599dd27ed7a4df1b2dc7c148efa"},
-    {file = "tifffile-2023.3.21.tar.gz", hash = "sha256:16027be65e9d5a1b26bf106a98a639345fecf83ebac9004dc7e617647e4dbfeb"},
+    {file = "tifffile-2023.4.12-py3-none-any.whl", hash = "sha256:3161954746fe32c4f4244d0fb2eb0a272f3a3760b78882a42faa83ac5e6e0b74"},
+    {file = "tifffile-2023.4.12.tar.gz", hash = "sha256:2fa99f9890caab919d932a0acaa9d0f5843dc2ef3594e212963932e20713badd"},
 ]
 
 [package.dependencies]
@@ -879,4 +882,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.11"
-content-hash = "f9b5de716a2ebc265f7a5a148d20c3d65505b5993ec21946c4ad2c1fcd843898"
+content-hash = "48dcc18ffe4cddf7b446c0422cbbdd47db7a1731f6eb0ddb5e1e616a3f175ea9"

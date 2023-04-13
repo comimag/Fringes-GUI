@@ -8,15 +8,16 @@ import pyqtgraph as pg
 import cv2
 import json
 import yaml
+import asdf
 import toml
 import fringes as frng
 
 
 config = {
-    ".toml": toml.load,
-    ".yml": yaml.safe_load,
-    ".yaml": yaml.safe_load,
     ".json": json.load,
+    ".yaml": yaml.safe_load,
+    ".toml": toml.load,
+    ".asdf": asdf.open,
 }
 
 image = {
@@ -70,7 +71,7 @@ def set_logic(gui):
 
         flist = QFileDialog.getOpenFileNames(
             caption="Select file(s)",
-            directory=os.path.join(os.path.expanduser("~"), "Videos"),
+            # directory=os.path.join(os.path.expanduser("~"), "Videos"),
             # options=QFileDialog.Option.DontUseNativeDialog,
             filter=f"Images {tuple('*' + key for key in image.keys())};;Numpy {tuple('*' + key for key in numpy.keys())};;Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", "")
         )
@@ -129,7 +130,7 @@ def set_logic(gui):
 
         path = QFileDialog.getExistingDirectory(
             caption="Select directory",
-            directory=os.path.join(os.path.expanduser("~"), "Videos"),
+            # directory=os.path.join(os.path.expanduser("~"), "Videos"),
             # options=QFileDialog.Option.DontUseNativeDialog,
         )
 
@@ -204,6 +205,21 @@ def set_logic(gui):
             gui.decode_key.setEnabled(gui.decodeOK)
         except Exception:
             pass
+
+    def coordinates():
+        """Coordinates being encoded."""
+        if hasattr(gui.con, "coordinates"):
+            delattr(gui.con, "coordinates")
+
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
+
+        with pg.BusyCursor():
+            gui.con.coordinates = gui.fringes.coordinates()
+
+        view(getattr(gui.con, "coordinates").astype(float))
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
 
     def encode():
         """Encode fringes based on the given parameters."""
@@ -444,6 +460,7 @@ def set_logic(gui):
     gui.set_key.activated.connect(set_data)
     gui.data_table.itemSelectionChanged.connect(selection_changed)
 
+    gui.coordinates_key.activated.connect(coordinates)
     gui.encode_button.clicked.connect(encode)
     gui.encode_key.activated.connect(encode)
     gui.decode_button.clicked.connect(decode)

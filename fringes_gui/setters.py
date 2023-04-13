@@ -34,6 +34,10 @@ def set_functionality(gui):
         key = change[0][0].opts["name"]
         val = change[0][2]
 
+        if key in ["grid", "angle", "D"]:
+            if hasattr(gui.con, "coordinates"):
+                delattr(gui.con, "coordinates")
+
         if key not in ["mode", "verbose"] or \
                 key == "axis" and gui.fringes.D == 2:
             if hasattr(gui.con, "fringes"):
@@ -131,8 +135,8 @@ def set_functionality(gui):
         user_old = gui.visibility  # used if setting user to experimental
         gui.visibility = val
 
-        with gui.params.treeChangeBlocker():
-            if gui.visibility == "Beginner":
+        if gui.visibility == "Beginner":
+            with gui.params.treeChangeBlocker():
                 gui.params.param("vid", "T").setLimits((3, gui.fringes._Tmax))
                 gui.params.param("vid", "C").hide()
                 gui.params.param("vid", "alpha").hide()
@@ -171,7 +175,8 @@ def set_functionality(gui):
                 gui.params.param("uwr", "verbose").hide()
                 gui.params.param("quali").hide()
                 gui.params.param("quali", "dark").setValue(gui.fringes.defaults["dark"])
-            elif gui.visibility == "Expert":
+        elif gui.visibility == "Expert":
+            with gui.params.treeChangeBlocker():
                 gui.params.param("vid", "T").setLimits((3, gui.fringes._Tmax))
                 gui.params.param("vid", "alpha").hide()
                 gui.params.param("sys", "grid").setValue(gui.fringes.defaults["grid"])
@@ -209,7 +214,8 @@ def set_functionality(gui):
                 gui.params.param("quali").show()
                 gui.params.param("quali", "dark").hide()  # Experimental
                 gui.params.param("quali", "shot").hide()  # Experimental
-            elif gui.visibility == "Guru":
+        elif gui.visibility == "Guru":
+            with gui.params.treeChangeBlocker():
                 gui.params.param("vid", "T").setLimits((1, gui.fringes._Tmax))
                 gui.params.param("sys", "grid").setValue(gui.fringes.defaults["grid"])
                 gui.params.param("sys", "grid").hide()  # todo: experimantal -> guru
@@ -232,10 +238,12 @@ def set_functionality(gui):
                 gui.params.param("quali").show()
                 gui.params.param("quali", "dark").hide()  # Experimental
                 gui.params.param("quali", "shot").hide()  # Experimental
-            elif gui.visibility == "Experimental":
-                if user_old not in ["Guru", "Experimental"]:
-                    gui.params.param("vis").setValue("Guru")  # get the settings from Guru mode first
-                    gui.params.param("vis").setValue("Experimental")
+        elif gui.visibility == "Experimental":
+            if user_old != "Guru":
+                gui.params.param("vis").setValue("Guru")  # get the settings from Guru mode first
+                gui.params.param("vis").setValue("Experimental")
+
+            with gui.params.treeChangeBlocker():
                 gui.params.param("sys", "grid").show()
                 gui.params.param("sys", "angle").show()
                 gui.params.param("uwr", "mode").show()
@@ -243,7 +251,7 @@ def set_functionality(gui):
                 gui.params.param("quali", "dark").show()
                 gui.params.param("quali", "shot").show()
 
-            update_parameter_tree()
+        update_parameter_tree()
 
     def update_parameter_tree():
         is2D = max(gui.fringes.N.ndim, gui.fringes.l.ndim, gui.fringes.v.ndim, gui.fringes.f.ndim) == 2 or \

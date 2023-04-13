@@ -156,6 +156,7 @@ class FringesGUI(QApplication):
         self.reset_button.setEnabled(False)
         self.reset_button.setToolTip("Press 'Ctrl+R'.")
         self.default_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+D"), self.win)
+        self.coordinates_key = QtGui.QShortcut(QtGui.QKeySequence("G"), self.win)
         self.encode_button = QtWidgets.QPushButton("Encode")
         self.encode_button.setToolTip("Press 'E'.")
         self.encode_button.setStyleSheet("" if self.encodeOK else "QPushButton{color: red}")
