@@ -24,7 +24,7 @@ Now the graphical user interface should appear:
 ![Screenshot](docs/GUI.png)\
 Screenshot of the GUI.
 
-### Parameter Tree
+### Attributes
 In the top left corner the attribute widget is located.
 It contains the parameter tree with which all the properties of the `Fringes` class
 from the [fringes](https://pypi.org/project/fringes/) package can be controlled.
@@ -52,7 +52,7 @@ for the assignment of the recommended visibility:
   New features that have not been tested yet
   and are likely to crash the system at some point.
 
-### Function Buttons
+### Methods
 In the bottem left corner you will find buttons for the associated methods of the `Fringes` class.
 Alternatively, you can use the keyboard shortcuts which are displayed when you hover over the buttons.
 The buttons are only active if the necessary data has been enoded, decoded or loaded.

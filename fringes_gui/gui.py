@@ -22,13 +22,9 @@ class FringesGUI(QApplication):
     def __init__(self):
         super(FringesGUI, self).__init__([])
 
-        myappid = "Fringes-GUI"  # arbitrary string
-        try:
-            fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
-            version = toml.load(fname)["tool"]["poetry"]["version"]
-            myappid += "_" + version
-        except Exception:
-            pass
+        fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
+        version = toml.load(fname)["tool"]["poetry"]["version"]
+        myappid = "Fringes-GUI" + " " + version  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
         pg.setConfigOptions(imageAxisOrder="row-major", useNumba=True)  # useCupy
