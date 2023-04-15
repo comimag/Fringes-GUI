@@ -136,7 +136,7 @@ def set_params(gui):
                     "type": "float",
                     "value": gui.fringes.angle,
                     "default": gui.fringes.defaults["angle"],
-                    "limits": (-360, 360),  # todo: +-45
+                    "limits": (-360, 360),
                     "decimals": gui.digits,
                     "suffix": "°",
                     "visible": gui.visibility == "Guru",

@@ -73,7 +73,9 @@ def set_logic(gui):
             caption="Select file(s)",
             # directory=os.path.join(os.path.expanduser("~"), "Videos"),
             # options=QFileDialog.Option.DontUseNativeDialog,
-            filter=f"Images {tuple('*' + key for key in image.keys())};;Numpy {tuple('*' + key for key in numpy.keys())};;Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", "")
+            filter=f"Images {tuple('*' + key for key in image.keys())};;"
+                   f"Numpy {tuple('*' + key for key in numpy.keys())};;"
+                   f"Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", "")
         )
 
         if flist[0]:
@@ -141,7 +143,7 @@ def set_logic(gui):
                 for k, v in gui.con.__dict__.items():
                     if isinstance(v, np.ndarray) and v.size > 0:
                         T, Y, X, C = v.shape = frng.vshape(v).shape
-                        color_order = (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0  # to compensate OpenCV color order
+                        color_order = (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0  # compensate OpenCV color order
                         color_channels = (1, 3, 4)
                         is_img_shape = v.ndim <= 2 or v.ndim == 3 and v.shape[-1] in color_channels
                         is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
