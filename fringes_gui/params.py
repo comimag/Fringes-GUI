@@ -96,7 +96,7 @@ def set_params(gui):
                 "type": "float",
                 "value": gui.fringes.alpha,
                 "default": gui.fringes.defaults["alpha"],
-                "limits": (1, 2),
+                "limits": (1, gui.fringes._alphamax),
                 "step": 0.1,
                 "decimals": gui.digits,
                 "visible": gui.visibility == "Guru",
@@ -194,7 +194,7 @@ def set_params(gui):
                             "limits": (max(gui.fringes.Nmin, 1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3), gui.fringes._Nmax),
                             "tip": gui.fringes.__class__.N.__doc__,
                         } for d in range(gui.fringes.D) for k in range(gui.fringes.K)
-                    ] if gui.visibility == "Guru" or gui.fringes.N.ndim > 1 else [
+                    ] if gui.visibility == "Guru" or gui.fringes.N.ndim > 1 else [  # todo: FDM: N_i
                         {
                             "name": "N" + str(k).translate(gui.sub),
                             "type": "int",

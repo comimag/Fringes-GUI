@@ -31,9 +31,6 @@ class FringesGUI(QApplication):
 
         self.fringes = frng.Fringes(X=1920, Y=1200)
         self.fringes.logger.setLevel("INFO")
-        fname = os.path.join(os.path.dirname(__file__), "params.yaml")
-        if os.path.isfile(fname):
-            self.fringes.load(fname)
         self.initials = self.fringes.params
         self.key = ""
         self.visibility = "Expert"
@@ -289,6 +286,11 @@ class FringesGUI(QApplication):
         # todo: reset button or simply restart? save current config on shutdown
 
         set_functionality(self)
+
+        fname = os.path.join(os.path.expanduser("~"), ".fringes.yaml")
+        if os.path.isfile(fname):
+            self.fringes.load(fname)
+            self.update_parameter_tree()
 
         self.show()
         # self.fringes.logger.info(f"Started {myappid}.")

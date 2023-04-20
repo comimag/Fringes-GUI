@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtWidgets
@@ -13,7 +15,7 @@ def set_functionality(gui):
 
     gui.params = pg.parametertree.Parameter.create(name="Settings", type="group", children=gui.params)
     gui.tree.setParameters(gui.params, showTop=False)
-    gui.params_initial = gui.params.saveState()
+    # gui.params_initial = gui.params.saveState()
 
     set_logic(gui)
 
@@ -38,7 +40,7 @@ def set_functionality(gui):
             if hasattr(gui.con, "coordinates"):
                 delattr(gui.con, "coordinates")
 
-        if key not in ["mode", "verbose"] or \
+        if key not in ["mode", "Vmin", "verbose"] or \
                 key == "axis" and gui.fringes.D == 2:
             if hasattr(gui.con, "fringes"):
                 delattr(gui.con, "fringes")
@@ -128,6 +130,8 @@ def set_functionality(gui):
             val *= np.pi
 
         setattr(gui.fringes, key, val)
+        fname = os.path.join(os.path.expanduser("~"), ".fringes.yaml")
+        gui.fringes.save(fname)
 
         update_parameter_tree()
 
@@ -232,12 +236,12 @@ def set_functionality(gui):
                 gui.params.param("mux").show()
                 gui.params.param("col").show()
                 gui.params.param("uwr", "mode").setValue(gui.fringes.defaults["mode"])
-                gui.params.param("uwr", "mode").hide()
+                gui.params.param("uwr", "mode").hide()  # todo: experimantal -> guru
                 gui.params.param("uwr", "Vmin").setValue(gui.fringes.defaults["Vmin"])
-                gui.params.param("uwr", "Vmin").hide()
+                gui.params.param("uwr", "Vmin").hide()  # todo: experimantal -> guru
                 gui.params.param("quali").show()
-                gui.params.param("quali", "dark").hide()  # Experimental
-                gui.params.param("quali", "shot").hide()  # Experimental
+                gui.params.param("quali", "dark").hide()  # todo: experimantal -> guru
+                gui.params.param("quali", "shot").hide()  # todo: experimantal -> guru
         elif gui.visibility == "Experimental":
             if user_old != "Guru":
                 gui.params.param("vis").setValue("Guru")  # get the settings from Guru mode first
@@ -258,8 +262,10 @@ def set_functionality(gui):
                gui.fringes.FDM or gui.visibility in ["Guru", "Experimental"]
 
         children = gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
+        children_N = gui.fringes.K if gui.fringes.FDM else gui.fringes.D * gui.fringes.K
 
-        change_indices = len(gui.params.param("set", "v").children()) != children or \
+        change_indices = len(gui.params.param("set", "N").children()) != children_N or \
+                         len(gui.params.param("set", "v").children()) != children or \
                          gui.fringes.D != gui.params.param("sys", "D").value() or \
                          gui.fringes.K != gui.params.param("set", "K").value() or \
                          gui.fringes.FDM != gui.params.param("mux", "FDM").value() or \

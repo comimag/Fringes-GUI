@@ -52,6 +52,11 @@ for the assignment of the recommended visibility:
   New features that have not been tested yet
   and are likely to crash the system at some point.
 
+Upon every parameter change, the complete parameter set of the `Fringes` instance is saved
+to the file `.fringes.yaml` in the user home directory.
+When the GUI starts again, the previous parameter set is loaded.
+To avoid this, just delete the config file or press the `reset` button in the `Methods` widget.
+
 ### Methods
 In the bottem left corner you will find buttons for the associated methods of the `Fringes` class.
 Alternatively, you can use the keyboard shortcuts which are displayed when you hover over the buttons.
