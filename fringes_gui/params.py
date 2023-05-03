@@ -395,7 +395,7 @@ def set_params(gui):
                     "type": "float",
                     "value": gui.fringes.beta,
                     "default": gui.fringes.defaults["beta"],
-                    "limits": (0, 1),
+                    "limits": (0, 0.5),
                     "step": 0.1,
                     "decimals": gui.digits,
                     "tip": gui.fringes.__class__.beta.__doc__,

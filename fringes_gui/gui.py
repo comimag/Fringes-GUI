@@ -29,10 +29,10 @@ class FringesGUI(QApplication):
         pg.setConfigOptions(imageAxisOrder="row-major", useNumba=True)  # useCupy
 
         self.fringes = frng.Fringes(X=1920, Y=1200)
-        self.fringes.logger.setLevel("INFO")
+        self.fringes.logger.setLevel("INFO")  # should be the same as in logic.py
         self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
         self.key = ""
-        self.visibility = "Expert"
+        self.visibility = "Expert"  # should be the same as in logic.py
         self.digits = 8  # todo: len(str(self.fringes._Pmax))  # 4 (digits) + 1 (point) + 3 (decimals) = 8 == current length of Pmax?
         self.sub = str.maketrans("1234567890", "₁₂₃₄₅₆₇₈₉₀")
         self.sup = str.maketrans("₁₂₃₄₅₆₇₈₉₀", "1234567890")
@@ -277,8 +277,6 @@ class FringesGUI(QApplication):
         handler.widget = self.log_widget
         self.fringes.logger.addHandler(handler)
 
-        # todo: reset button or simply restart? save current config on shutdown
-
         set_functionality(self)
 
         self.show()
@@ -318,7 +316,7 @@ class FringesGUI(QApplication):
     @property
     def resetOK(self):
         """True if params equal defalts."""
-        return self.fringes.params != frng.Fringes().params
+        return self.fringes.params != frng.Fringes().params or self.visibility != "Expert"
 
     @property
     def encodeOK(self):
@@ -359,8 +357,3 @@ class FringesGUI(QApplication):
     @property
     def heightOK(self):
         return hasattr(self.con, "curvature")
-
-    @property
-    def adv_vis(self):  # todo: remove
-        """Returns True if the user has at least Expert level access i.e. advanced visibility."""
-        return self.visibility in ["Expert", "Guru", "Experimental"]

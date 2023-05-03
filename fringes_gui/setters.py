@@ -98,8 +98,9 @@ def set_functionality(gui):
             QtWidgets.QApplication.processEvents()  # refresh event queue
 
         if key == "vis":
-            set_user(val)
+            set_visibility(val)
             gui.fringes.logger.debug(f"Set visibility to {gui.visibility}.")
+            gui.reset_button.setEnabled(gui.resetOK)
             return
         elif key == "log":
             gui.fringes.logger.setLevel(val)
@@ -144,7 +145,7 @@ def set_functionality(gui):
 
         update_parameter_tree()
 
-    def set_user(val):
+    def set_visibility(val):
         user_old = gui.visibility  # used if setting user to experimental
         gui.visibility = val
 

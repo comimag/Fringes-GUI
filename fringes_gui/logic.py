@@ -71,10 +71,14 @@ def set_logic(gui):
             gui.tree.setParameters(gui.param_buffer[gui.param_index], showTop=False)
 
     def reset():
-        gui.fringes.reset()
-        gui.update_parameter_tree()
+        with gui.params.treeChangeBlocker():
+            gui.params.param("vis").setValue("Expert")  # should be the same as in gui.py
+            gui.fringes.reset()
+            gui.update_parameter_tree()
+            # gui.params.param("log").setValue("INFO")  # should be the same as in gui.py
 
         clear()
+        gui.reset_button.setEnabled(gui.resetOK)
 
     def load():
         """Load data from given directory."""
