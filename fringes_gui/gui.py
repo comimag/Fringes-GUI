@@ -1,7 +1,6 @@
 import ctypes
 import os
 import logging as lg
-
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPlainTextEdit
 from pyqtgraph.Qt import QtGui, QtWidgets
@@ -32,7 +31,6 @@ class FringesGUI(QApplication):
         self.fringes = frng.Fringes(X=1920, Y=1200)
         self.fringes.logger.setLevel("INFO")
         self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
-        self.initials = self.fringes.params
         self.key = ""
         self.visibility = "Expert"
         self.digits = 8  # todo: len(str(self.fringes._Pmax))  # 4 (digits) + 1 (point) + 3 (decimals) = 8 == current length of Pmax?
@@ -137,22 +135,17 @@ class FringesGUI(QApplication):
         self.tree = pg.parametertree.ParameterTree()
         self.dock_attributes.addWidget(self.tree)
 
-        # self.reset_button = QtWidgets.QPushButton("Reset")  # todo
-        # self.reset_button.setToolTip("Reset parameters to values on start up.")
-        # self.dock_attributes.addWidget(self.reset_button)
-        self.reset_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+R"), self.win)
-
-        # self.undo_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Z"), self.win)  # todo
-        # self.redo_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Y"), self.win)
-
         # Control
+        self.undo_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Z"), self.win)
+        self.redo_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Y"), self.win)
+        self.reset_button = QtWidgets.QPushButton("Reset")
+        self.reset_button.setEnabled(self.resetOK)
+        self.reset_button.setToolTip("Press 'Ctrl+R'.")
+        self.reset_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+R"), self.win)
         self.encode_checkbox = QtWidgets.QCheckBox()
         self.encode_label = QtWidgets.QLabel("      Encode on parameter change")
         self.decode_checkbox = QtWidgets.QCheckBox()
         self.decode_label = QtWidgets.QLabel("      Decode on parameter change")
-        self.reset_button = QtWidgets.QPushButton("Reset")
-        self.reset_button.setEnabled(False)
-        self.reset_button.setToolTip("Press 'Ctrl+R'.")
         self.default_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+D"), self.win)
         self.coordinates_key = QtGui.QShortcut(QtGui.QKeySequence("G"), self.win)
         self.encode_button = QtWidgets.QPushButton("Encode")
@@ -321,6 +314,11 @@ class FringesGUI(QApplication):
     @property
     def muxtxt(self):
         return "Single Shot" if self.fringes.T == 1 else "Crossed Fringes" if self.fringes.D == 2 and (self.fringes.SDM or self.fringes.FDM) else ""
+
+    @property
+    def resetOK(self):
+        """True if params equal defalts."""
+        return self.fringes.params != frng.Fringes().params
 
     @property
     def encodeOK(self):

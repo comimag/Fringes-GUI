@@ -10,7 +10,7 @@ def set_params(gui):
         "title": "Visibility",
         "name": "vis",
         "type": "list",
-        "value": "Expert",
+        "value": gui.visibility,
         "limits": ["Beginner", "Expert", "Guru", "Experimental"],
         "tip": f"The Visibility defines the type of user that should get access to the feature. "
                f"It does not affect the functionality of the features but is used by the GUI to "
@@ -390,6 +390,17 @@ def set_params(gui):
                     "tip": gui.fringes.__class__.B.__doc__,
                 },
                 {
+                    "title": "Exposure",
+                    "name": "beta",
+                    "type": "float",
+                    "value": gui.fringes.beta,
+                    "default": gui.fringes.defaults["beta"],
+                    "limits": (0, 1),
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "tip": gui.fringes.__class__.beta.__doc__,
+                },
+                {
                     "title": "Visibility",
                     "name": "V",
                     "type": "float",
@@ -418,6 +429,7 @@ def set_params(gui):
         "name": "col",
         "type": "group",
         "visible": gui.visibility == "Guru",
+        "expanded": np.all(gui.fringes.h != gui.fringes._hues[0]),
         "children": [
             {
                 "title": "Averaging",
@@ -451,7 +463,8 @@ def set_params(gui):
             "title": "Multiplexing",
             "name": "mux",
             "type": "group",
-        "visible": gui.visibility == "Guru",
+            "visible": gui.visibility == "Guru",
+            "expanded": gui.fringes.FDM or gui.fringes.SDM or gui.fringes.WDM,
             "tip": "Multiplexing method.",
             "children": [
                 {

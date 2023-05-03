@@ -1,4 +1,5 @@
 import os
+from collections import deque
 
 import numpy as np
 import pyqtgraph as pg
@@ -15,7 +16,9 @@ def set_functionality(gui):
 
     gui.params = pg.parametertree.Parameter.create(name="Settings", type="group", children=gui.params)
     gui.tree.setParameters(gui.params, showTop=False)
-    # gui.params_initial = gui.params.saveState()
+    gui.param_buffer = deque(maxlen=100)
+    gui.param_buffer.append(gui.params)
+    gui.param_index = 0
 
     set_logic(gui)
 
@@ -32,6 +35,12 @@ def set_functionality(gui):
 
         if change[0][1] != "value":
             return
+
+        if gui.param_index + 1 < len(gui.param_buffer):
+            gui.param_buffer = deque(list(gui.param_buffer)[:gui.param_index + 1], maxlen=100)
+        gui.param_buffer.append(gui.params)
+        gui.param_index = len(gui.param_buffer) - 1
+        print("added state to buffer")
 
         key = change[0][0].opts["name"]
         val = change[0][2]
@@ -165,6 +174,7 @@ def set_functionality(gui):
                 gui.params.param("val", "V").setValue(gui.fringes.defaults["V"])
                 gui.params.param("val", "gamma").setValue(gui.fringes.defaults["gamma"])
                 gui.params.param("mux").hide()
+
                 gui.params.param("mux", "SDM").setValue(gui.fringes.defaults["SDM"])
                 gui.params.param("mux", "WDM").setValue(gui.fringes.defaults["WDM"])
                 gui.params.param("mux", "FDM", "static").setValue(gui.fringes.defaults["static"])
@@ -262,7 +272,8 @@ def set_functionality(gui):
                gui.fringes.FDM or gui.visibility in ["Guru", "Experimental"]
 
         children = gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
-        children_N = gui.fringes.K if gui.fringes.FDM else gui.fringes.D * gui.fringes.K
+        # children_N = gui.fringes.K if gui.fringes.FDM else gui.fringes.D * gui.fringes.K
+        children_N = 1 if gui.fringes.FDM else gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
 
         change_indices = len(gui.params.param("set", "N").children()) != children_N or \
                          len(gui.params.param("set", "v").children()) != children or \
@@ -442,9 +453,13 @@ def set_functionality(gui):
             gui.params.param("val", "B").setValue(gui.fringes.B)
             gui.params.param("val", "B").setDefault(gui.fringes.Imax / 2)
 
+            gui.params.param("val", "beta").setValue(gui.fringes.beta)
+
             gui.params.param("val", "V").setValue(gui.fringes.V)
 
             gui.params.param("val", "gamma").setValue(gui.fringes.gamma)
+
+            gui.params.param("col").setOpts(expanded=np.all(gui.fringes.h != gui.fringes._hues[0]))
 
             if len(gui.params.param("col", "H").children()) != gui.fringes.H or \
                     gui.params.param("col", "H").value() != gui.fringes.H or \
@@ -472,6 +487,8 @@ def set_functionality(gui):
             gui.params.param("col", "M").setValue(gui.fringes.M)
 
             gui.params.param("col", "H").setValue(gui.fringes.H)
+
+            gui.params.param("mux").setOpts(expanded=gui.fringes.FDM or gui.fringes.SDM or gui.fringes.WDM)
 
             gui.params.param("mux", "TDM").setValue(gui.fringes.TDM)
 
@@ -507,7 +524,7 @@ def set_functionality(gui):
 
             gui.params.param("quali", "DR").setValue(gui.fringes.DRdB.max())
 
-        gui.reset_button.setEnabled(gui.fringes.params != gui.initials)
+        gui.reset_button.setEnabled(gui.resetOK)
         gui.encode_button.setStyleSheet("" if gui.encodeOK else "QPushButton{color: red}")
         gui.decode_button.setEnabled(gui.decodeOK)
         gui.decode_key.setEnabled(gui.decodeOK)
@@ -533,7 +550,5 @@ def set_functionality(gui):
     gui.params.param("set", "l").sigActivated.connect(set_wavelengths)
     gui.params.param("set", "v").sigActivated.connect(set_periods)
     gui.params.param("set", "f").sigActivated.connect(set_frequencies)
-    a = gui.params
-    b = gui.params.sigTreeStateChanged
 
     gui.params.sigTreeStateChanged.connect(set_param)

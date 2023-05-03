@@ -60,6 +60,16 @@ def set_logic(gui):
         else:
             gui.win.showMaximized()
 
+    def undo():
+        if len(gui.param_buffer) and gui.param_index >= 0:
+            gui.param_index -= 1
+            gui.tree.setParameters(gui.param_buffer[gui.param_index], showTop=False)
+
+    def redo():
+        if len(gui.param_buffer) > gui.param_index + 1:
+            gui.param_index += 1
+            gui.tree.setParameters(gui.param_buffer[gui.param_index], showTop=False)
+
     def reset():
         gui.fringes.reset()
         gui.update_parameter_tree()
@@ -448,6 +458,8 @@ def set_logic(gui):
     # assign functionality to buttons
     gui.immerse_key.activated.connect(immerse)
 
+    gui.undo_key.activated.connect(undo)
+    gui.redo_key.activated.connect(redo)
     gui.reset_button.clicked.connect(reset)
     gui.reset_key.activated.connect(reset)
 
