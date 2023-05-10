@@ -1,13 +1,14 @@
-import ctypes
 import os
+import ctypes
 import logging as lg
+
+import numpy as np
+import toml
+import fringes as frng
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPlainTextEdit
 from pyqtgraph.Qt import QtGui, QtWidgets
 from pyqtgraph.dockarea import *
-import numpy as np
-import toml
-import fringes as frng
 
 from fringes_gui.setters import set_functionality
 
@@ -308,10 +309,6 @@ class FringesGUI(QApplication):
         b = not self.fringes.SDM
         c = not self.fringes.WDM
         return a and b and c
-
-    @property
-    def muxtxt(self):
-        return "Single Shot" if self.fringes.T == 1 else "Crossed Fringes" if self.fringes.D == 2 and (self.fringes.SDM or self.fringes.FDM) else ""
 
     @property
     def resetOK(self):

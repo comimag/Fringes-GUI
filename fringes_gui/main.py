@@ -2,7 +2,7 @@ from gui import FringesGUI
 
 
 def main():
-    gui = FringesGUI()  # todo: encapsulate this with a with statement to ensure params get saved upon shutdown and/or crash
+    gui = FringesGUI()
     gui.show()
 
 

@@ -187,7 +187,7 @@ def set_params(gui):
                     "tip": "Reset values to defaults.",
                     "children": [
                         {
-                            "name": "N" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "N" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
                             "type": "int",
                             "value": gui.fringes._N[d, k],
                             "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
@@ -213,7 +213,7 @@ def set_params(gui):
                     "children": [
                         {
                             "title": "\u03BB" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
-                            "name": "l" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "l" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
                             "type": "float",
                             "value": gui.fringes._l[d, k],
                             "default": None,  # gui.fringes.L ** (1 / (k + 1)),
@@ -243,7 +243,7 @@ def set_params(gui):
                     "children": [
                         {
                             "title": "\u03BD" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
-                            "name": "v" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "v" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
                             "type": "float",
                             "value": gui.fringes._v[d, k],
                             "default": None,  # gui.fringes.L ** (1 - 1 / (k + 1)),
@@ -271,7 +271,7 @@ def set_params(gui):
                     "tip": "Reset values to defaults.",
                     "children": [
                         {
-                            "name": "f" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "f" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
                             "type": "float",
                             "value": gui.fringes._f[d, k],
                             "default": None if gui.fringes.FDM else 1,
@@ -592,6 +592,7 @@ def set_params(gui):
                     "value": gui.fringes.quant,
                     "readonly": True,
                     "decimals": gui.digits,
+                    "visible": gui.visibility == "Guru",
                     "tip": gui.fringes.__class__.quant.__doc__
                 },
                 {

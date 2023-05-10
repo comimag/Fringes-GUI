@@ -40,7 +40,7 @@ def set_functionality(gui):
             gui.param_buffer = deque(list(gui.param_buffer)[:gui.param_index + 1], maxlen=100)
         gui.param_buffer.append(gui.params)
         gui.param_index = len(gui.param_buffer) - 1
-        print("added state to buffer")
+        # print("added state to buffer")
 
         key = change[0][0].opts["name"]
         val = change[0][2]
@@ -172,6 +172,7 @@ def set_functionality(gui):
                 gui.params.param("val", "dtype").setValue(gui.fringes.defaults["dtype"])
                 gui.params.param("val", "A").setValue(gui.fringes.defaults["A"])
                 gui.params.param("val", "B").setValue(gui.fringes.defaults["B"])
+                gui.params.param("val", "beta").setValue(gui.fringes.defaults["beta"])
                 gui.params.param("val", "V").setValue(gui.fringes.defaults["V"])
                 gui.params.param("val", "gamma").setValue(gui.fringes.defaults["gamma"])
                 gui.params.param("mux").hide()
@@ -210,9 +211,6 @@ def set_functionality(gui):
                 gui.params.param("val", "dtype").hide()
                 gui.params.param("val", "Imax").setValue(gui.fringes.Imax)
                 gui.params.param("val", "Imax").hide()
-                gui.params.param("val", "A").show()
-                gui.params.param("val", "B").show()
-                gui.params.param("val", "V").show()
                 gui.params.param("val", "gamma").show()
                 gui.params.param("mux").hide()
                 gui.params.param("mux", "SDM").setValue(gui.fringes.defaults["SDM"])
@@ -228,6 +226,7 @@ def set_functionality(gui):
                 gui.params.param("uwr", "verbose").show()
                 gui.params.param("quali").show()
                 gui.params.param("quali", "dark").hide()  # Experimental
+                gui.params.param("quali", "quant").hide()  # Experimental
                 gui.params.param("quali", "shot").hide()  # Experimental
         elif gui.visibility == "Guru":
             with gui.params.treeChangeBlocker():
@@ -252,6 +251,7 @@ def set_functionality(gui):
                 gui.params.param("uwr", "Vmin").hide()  # todo: experimantal -> guru
                 gui.params.param("quali").show()
                 gui.params.param("quali", "dark").hide()  # todo: experimantal -> guru
+                gui.params.param("quali", "quant").hide()  # todo: experimantal -> guru
                 gui.params.param("quali", "shot").hide()  # todo: experimantal -> guru
         elif gui.visibility == "Experimental":
             if user_old != "Guru":
@@ -264,6 +264,7 @@ def set_functionality(gui):
                 gui.params.param("uwr", "mode").show()
                 gui.params.param("uwr", "Vmin").show()
                 gui.params.param("quali", "dark").show()
+                gui.params.param("quali", "quant").show()
                 gui.params.param("quali", "shot").show()
 
         update_parameter_tree()
@@ -273,8 +274,19 @@ def set_functionality(gui):
                gui.fringes.FDM or gui.visibility in ["Guru", "Experimental"]
 
         children = gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
-        # children_N = gui.fringes.K if gui.fringes.FDM else gui.fringes.D * gui.fringes.K
         children_N = 1 if gui.fringes.FDM else gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
+
+        a = len(gui.params.param("set", "N").children()) != children_N
+        b = len(gui.params.param("set", "v").children()) != children
+        c = gui.fringes.D != gui.params.param("sys", "D").value()
+        d = gui.fringes.K != gui.params.param("set", "K").value()
+        e = gui.fringes.FDM != gui.params.param("mux", "FDM").value()
+        f = gui.params.param("vis").value() in ["Guru", "Experimental"] and \
+            "," not in gui.params.param("set", "v").children()[0].name()
+        g = gui.params.param("vis").value() not in ["Guru", "Experimental"] and \
+            "," in gui.params.param("set", "v").children()[0].name()
+        h = is2D and "," not in gui.params.param("set", "v").children()[0].name()
+        i = not is2D and "," in gui.params.param("set", "v").children()[0].name()
 
         change_indices = len(gui.params.param("set", "N").children()) != children_N or \
                          len(gui.params.param("set", "v").children()) != children or \

@@ -21,7 +21,7 @@ fgui.run()
 
 Now the graphical user interface should appear:
 
-![Screenshot](docs/GUI.png)\
+![Screenshot](docs/GUI.png?raw=True)\
 Screenshot of the GUI.
 
 ### Attributes
@@ -55,7 +55,8 @@ for the assignment of the recommended visibility:
 Upon every parameter change, the complete parameter set of the `Fringes` instance is saved
 to the file `.fringes.yaml` in the user home directory.
 When the GUI starts again, the previous parameter set is loaded.
-To avoid this, just delete the config file or press the `reset` button in the `Methods` widget.
+To avoid this, just delete the config file
+or press the `reset` button in the `Methods` widget to restore the default parameter set.
 
 ### Methods
 In the bottem left corner you will find buttons for the associated methods of the `Fringes` class.
