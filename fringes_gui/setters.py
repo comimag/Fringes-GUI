@@ -288,17 +288,7 @@ def set_functionality(gui):
         h = is2D and "," not in gui.params.param("set", "v").children()[0].name()
         i = not is2D and "," in gui.params.param("set", "v").children()[0].name()
 
-        change_indices = len(gui.params.param("set", "N").children()) != children_N or \
-                         len(gui.params.param("set", "v").children()) != children or \
-                         gui.fringes.D != gui.params.param("sys", "D").value() or \
-                         gui.fringes.K != gui.params.param("set", "K").value() or \
-                         gui.fringes.FDM != gui.params.param("mux", "FDM").value() or \
-                         gui.params.param("vis").value() in ["Guru", "Experimental"] and \
-                         "," not in gui.params.param("set", "v").children()[0].name() or \
-                         gui.params.param("vis").value() not in ["Guru", "Experimental"] and \
-                         "," in gui.params.param("set", "v").children()[0].name() or \
-                         is2D and "," not in gui.params.param("set", "v").children()[0].name() or \
-                         not is2D and "," in gui.params.param("set", "v").children()[0].name()
+        change_indices = any((a, b, c, d, e, f, g, h, i))
 
         with gui.params.treeChangeBlocker():
             if gui.fringes.SDM:
@@ -440,6 +430,7 @@ def set_functionality(gui):
                         gui.params.param("set", "v", "v" + id).setLimits((0, gui.fringes.vmax))
                         gui.params.param("set", "v", "v" + id).setValue(gui.fringes._v[d, k])
 
+                        gui.params.param("set", "f", "f" + id).setReadonly(gui.fringes.FDM and gui.fringes.static)
                         gui.params.param("set", "f", "f" + id).setLimits((-gui.fringes.vmax, gui.fringes.vmax))
                         gui.params.param("set", "f", "f" + id).setValue(gui.fringes._f[d, k])
                         gui.params.param("set", "f", "f" + id).setDefault(None if gui.fringes.FDM else 1)

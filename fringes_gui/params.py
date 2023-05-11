@@ -275,7 +275,7 @@ def set_params(gui):
                             "type": "float",
                             "value": gui.fringes._f[d, k],
                             "default": None if gui.fringes.FDM else 1,
-                            "limits": (-gui.fringes.vmax, gui.fringes.vmax),
+                            "limits": (-gui.fringes.fmax, gui.fringes.fmax),
                             "decimals": gui.digits,
                             "readonly": gui.fringes.FDM and gui.fringes.static,
                             "tip": gui.fringes.__class__.f.__doc__,
@@ -286,7 +286,7 @@ def set_params(gui):
                             "type": "float",
                             "value": gui.fringes.f[k],
                             "default": 1,
-                            "limits": (-gui.fringes.vmax, gui.fringes.vmax),
+                            "limits": (-gui.fringes.fmax, gui.fringes.fmax),
                             "decimals": gui.digits,
                             "tip": gui.fringes.__class__.f.__doc__,
                         } for k in range(gui.fringes.K)
