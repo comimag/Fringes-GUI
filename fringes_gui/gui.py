@@ -3,13 +3,13 @@ import ctypes
 import logging as lg
 
 import numpy as np
-import toml
 import fringes as frng
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPlainTextEdit
 from pyqtgraph.Qt import QtGui, QtWidgets
 from pyqtgraph.dockarea import *
 
+import fringes_gui
 from fringes_gui.setters import set_functionality
 
 # import pyqtgraph.examples
@@ -22,9 +22,9 @@ class FringesGUI(QApplication):
     def __init__(self):
         super(FringesGUI, self).__init__([])
 
-        fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
-        version = toml.load(fname)["tool"]["poetry"]["version"]
-        myappid = "Fringes-GUI" + " " + version  # arbitrary string
+        myappid = "Fringes-GUI"   # arbitrary string
+        if fringes_gui.__version__:
+            myappid += f" {fringes_gui.__version__}"
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
         pg.setConfigOptions(imageAxisOrder="row-major", useNumba=True)  # useCupy
@@ -279,9 +279,6 @@ class FringesGUI(QApplication):
         self.fringes.logger.addHandler(handler)
 
         set_functionality(self)
-
-        self.show()
-        # self.fringes.logger.info(f"Started {myappid}.")
 
     def show(self):
         """Display the Application."""

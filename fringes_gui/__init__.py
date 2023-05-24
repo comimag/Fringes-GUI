@@ -1,8 +1,19 @@
+import importlib
+import os
+
+import toml
+
 from .gui import FringesGUI
+
+try:
+    fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
+    version = toml.load(fname)["tool"]["poetry"]["version"]
+except FileNotFoundError or KeyError:
+    version = importlib.metadata.version("fringes_gui")
+
+__version__ = version
 
 
 def run():
-    FringesGUI()
-
-
-__version__ = '0.1.4'
+    gui = FringesGUI()
+    gui.show()

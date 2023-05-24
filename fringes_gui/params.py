@@ -51,7 +51,7 @@ def set_params(gui):
                 "name": "T",
                 "type": "int",
                 "value": gui.fringes.T,
-                "default": gui.fringes.T,
+                "default": gui.fringes.defaults["T"],
                 "limits": (1 if gui.visibility == "Guru" else 3, gui.fringes._Tmax),
                 "tip": gui.fringes.__class__.T.__doc__,
             },
@@ -61,9 +61,7 @@ def set_params(gui):
                 "type": "int",
                 "value": gui.fringes.Y,
                 "default": gui.fringes.Y,  # defaults["Y"]
-                "limits": (
-                    1, min(gui.fringes._Ymax, gui.fringes._Pmax / gui.fringes.X) if gui.visibility == "Guru" else 7680
-                ),
+                "limits": (1, min(gui.fringes._Ymax, gui.fringes._Pmax / gui.fringes.X)),
                 "step": 10,
                 "suffix": " px",
                 "tip": gui.fringes.__class__.Y.__doc__,
@@ -74,9 +72,7 @@ def set_params(gui):
                 "type": "int",
                 "value": gui.fringes.X,
                 "default": gui.fringes.X,  # defaults["X"]
-                "limits": (
-                    1, min(gui.fringes._Xmax, gui.fringes._Pmax / gui.fringes.Y) if gui.visibility == "Guru" else 7680
-                ),
+                "limits": (1, min(gui.fringes._Xmax, gui.fringes._Pmax / gui.fringes.Y)),
                 "step": 10,
                 "suffix": " px",
                 "tip": gui.fringes.__class__.X.__doc__,
@@ -177,7 +173,6 @@ def set_params(gui):
                     "value": gui.fringes.K,
                     "default": gui.fringes.defaults["K"],
                     "limits": (1, gui.fringes._Kmax),
-                    # 1 if gui.visibility != "Guru" else gui.fringes._Kmax
                     "tip": gui.fringes.__class__.K.__doc__,
                 },
                 {
@@ -472,7 +467,7 @@ def set_params(gui):
                     "name": "TDM",
                     "type": "bool",
                     "value": gui.fringes.TDM,
-                    "default": gui.fringes.defaults["TDM"],
+                    "default": gui.fringes.TDM,
                     "readonly": True,
                     "tip": gui.fringes.__class__.TDM.__doc__,
                 },
