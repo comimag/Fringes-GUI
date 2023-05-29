@@ -5,7 +5,7 @@ import toml
 
 from .gui import FringesGUI
 
-try:
+try:  # PackageNotFoundError
     fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
     version = toml.load(fname)["tool"]["poetry"]["version"]
 except FileNotFoundError or KeyError:

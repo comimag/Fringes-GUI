@@ -463,7 +463,7 @@ def set_functionality(gui):
 
             gui.params.param("val", "gamma").setValue(gui.fringes.gamma)
 
-            gui.params.param("col").setOpts(expanded=np.all(gui.fringes.h != gui.fringes._hues[0]))
+            gui.params.param("col").setOpts(expanded=gui.fringes.H > 1 or np.any(gui.fringes.h != 255))
 
             if len(gui.params.param("col", "H").children()) != gui.fringes.H or \
                     gui.params.param("col", "H").value() != gui.fringes.H or \
@@ -471,7 +471,7 @@ def set_functionality(gui):
 
                 gui.params.param("col", "H").clearChildren()
 
-                for h in range(gui.fringes.H):
+                for h in range(gui.fringes.H):r
                     id = str(h).translate(gui.sub)
                     gui.params.param("col", "H").addChild(
                         {

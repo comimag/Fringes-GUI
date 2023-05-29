@@ -313,7 +313,7 @@ def set_params(gui):
                     "type": "int",
                     "value": gui.fringes.lmin,
                     "default": gui.fringes.defaults["lmin"],
-                    "limits": (4, gui.fringes.L),
+                    "limits": (gui.fringes._lminmin, gui.fringes.L),
                     "suffix": "px",
                     "tip": gui.fringes.__class__.lmin.__doc__,
                 },
@@ -424,7 +424,7 @@ def set_params(gui):
         "name": "col",
         "type": "group",
         "visible": gui.visibility == "Guru",
-        "expanded": np.all(gui.fringes.h != gui.fringes._hues[0]),
+        "expanded": gui.fringes.H > 1 or np.any(gui.fringes.h != 255),
         "children": [
             {
                 "title": "Averaging",
