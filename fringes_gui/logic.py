@@ -74,6 +74,7 @@ def set_logic(gui):
         with gui.params.treeChangeBlocker():
             gui.params.param("vis").setValue("Expert")  # should be the same as in gui.py
             gui.fringes.reset()
+            gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
             gui.update_parameter_tree()
             # gui.params.param("log").setValue("INFO")  # should be the same as in gui.py
 

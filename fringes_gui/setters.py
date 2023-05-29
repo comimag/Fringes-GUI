@@ -140,8 +140,7 @@ def set_functionality(gui):
             val *= np.pi
 
         setattr(gui.fringes, key, val)
-        fname = os.path.join(os.path.expanduser("~"), ".fringes.yaml")
-        gui.fringes.save(fname)
+        gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
 
         update_parameter_tree()
 
@@ -471,7 +470,7 @@ def set_functionality(gui):
 
                 gui.params.param("col", "H").clearChildren()
 
-                for h in range(gui.fringes.H):r
+                for h in range(gui.fringes.H):
                     id = str(h).translate(gui.sub)
                     gui.params.param("col", "H").addChild(
                         {
