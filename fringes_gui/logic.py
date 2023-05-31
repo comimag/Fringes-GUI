@@ -13,12 +13,7 @@ import toml
 import fringes as frng
 
 
-config = {
-    ".json": json.load,
-    ".yaml": yaml.safe_load,
-    ".toml": toml.load,
-    ".asdf": asdf.open,
-}
+config = frng.Fringes._loader
 
 image = {
     ".bmp": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
@@ -40,13 +35,14 @@ image = {
     ".tif": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
 }
 
-numpy = {
+binary = {
     ".mmap": np.load,
     ".npy": np.load,
     # ".npz": np.load  # todo
+    # ".asdf: asdf.open  # todo
 }
 
-loader = {**config, **image, **numpy}
+loader = {**config, **image, **binary}
 
 
 def set_logic(gui):
@@ -88,8 +84,9 @@ def set_logic(gui):
             caption="Select file(s)",
             # directory=os.path.join(os.path.expanduser("~"), "Videos"),
             # options=QFileDialog.Option.DontUseNativeDialog,
-            filter=f"Images {tuple('*' + key for key in image.keys())};;"
-                   f"Numpy {tuple('*' + key for key in numpy.keys())};;"
+            filter=f"All {tuple('*' + key for key in loader.keys())};;"
+                   f"Images {tuple('*' + key for key in image.keys())};;"
+                   f"Binary {tuple('*' + key for key in binary.keys())};;"
                    f"Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", "")
         )
 
@@ -98,33 +95,46 @@ def set_logic(gui):
                 path, base = os.path.split(flist[0][0])
                 name, ext = os.path.splitext(base)
 
-                if ext in config.keys():
+                if ext in config.keys():  # load config
                     gui.fringes.load(flist[0][0])
                     gui.update_parameter_tree()
                 else:  # load data
                     root = name.rstrip("1234567890").rstrip("_")
 
                     data = loader[ext](flist[0][0])
-                    shape = data.shape
-                    dtype = data.dtype
 
-                    sequence = np.empty((len(flist[0]),) + shape, dtype)
-                    sequence[0] = data
-                    for i, f in enumerate(flist[0][1:]):
-                        path, base = os.path.split(f)
-                        name, ext_i = os.path.splitext(base)
-                        root_i = name.rstrip("1234567890").rstrip("_")
-                        data_i = loader[ext_i](f)
-
-                        if ext_i == ext and root_i == root and data.shape == data_i.shape and data.dtype == data_i.dtype:
-                            sequence[i+1] = data_i
-                        else:
-                            gui.fringes.logger.error("Files in list dint't match; terminated loading data.")
+                    if len(flist[0]) > 1:
+                        if ext not in image:
+                            gui.fringes.logger.error("Selected multiple files which aren't images. "
+                                                     "Terminated loading data.")
                             return
 
-                    sequence = frng.vshape(sequence)
-                    setattr(gui.con, root, sequence)
-                    gui.fringes.logger.info(f"Loaded data from '{path}'.")
+                        # data is only one datum in list of data
+                        datum = data
+                        data = np.empty((len(flist[0]),) + datum.shape, datum.dtype)
+                        data[0] = datum
+
+                        for i, f in enumerate(flist[0][1:]):
+                            path, base = os.path.split(f)
+                            name, ext_ = os.path.splitext(base)
+                            root_ = name.rstrip("1234567890").rstrip("_")
+
+                            if ext_ == ext and root_ == root:
+                                datum = loader[ext_](f)
+
+                                if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
+                                    data[i + 1] = datum
+                                else:
+                                    gui.fringes.logger.error("Files in list dint't match. "
+                                                             "Terminated loading data.")
+                                    return
+
+                        gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*'), ext}'.")
+                    else:
+                        gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")
+
+                    data = frng.vshape(data)
+                    setattr(gui.con, root, data)
 
                     view(getattr(gui.con, root))
                     gui.data_table.setData(gui.con.info)
@@ -174,8 +184,8 @@ def set_logic(gui):
                                 cv2.imwrite(fname, v[t][..., color_order])
                         else:  # save as numpy array
                             np.save(os.path.join(path, f"{k}.npy"), v)
-
-                gui.fringes.logger.info(f"Saved data to '{path}'.")
+                else:  # executes only after the loop completes normally
+                    gui.fringes.logger.info(f"Saved data to '{path}'.")
 
     def clear():
         """Clear all data from the gui_util."""
