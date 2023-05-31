@@ -313,7 +313,7 @@ def set_params(gui):
                     "type": "int",
                     "value": gui.fringes.lmin,
                     "default": gui.fringes.defaults["lmin"],
-                    "limits": (gui.fringes._lminmin, gui.fringes.L),
+                    "limits": (gui.fringes._lminmin, None),
                     "suffix": "px",
                     "tip": gui.fringes.__class__.lmin.__doc__,
                 },
