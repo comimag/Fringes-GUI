@@ -129,7 +129,7 @@ def set_logic(gui):
                                                              "Terminated loading data.")
                                     return
 
-                        gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*'), ext}'.")
+                        gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
                     else:
                         gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")
 
