@@ -456,6 +456,7 @@ def set_functionality(gui):
             gui.params.param("val", "B").setValue(gui.fringes.B)
             gui.params.param("val", "B").setDefault(gui.fringes.Imax / 2)
 
+            gui.params.param("val", "beta").setLimits((0, gui.fringes.betamax))
             gui.params.param("val", "beta").setValue(gui.fringes.beta)
 
             gui.params.param("val", "V").setValue(gui.fringes.V)
