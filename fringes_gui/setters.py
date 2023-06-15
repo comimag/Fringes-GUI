@@ -535,20 +535,24 @@ def set_functionality(gui):
     gui.update_parameter_tree = update_parameter_tree
 
     def set_shifts():
-        gui.fringes.N = "auto"
+        gui.fringes.N = 4
         update_parameter_tree()
+        gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
 
     def set_wavelengths():
-        gui.fringes.l = "auto"
+        gui.fringes.l = "optimal"
         update_parameter_tree()
+        gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
 
     def set_periods():
-        gui.fringes.v = "auto"
+        gui.fringes.v = "optimal"
         update_parameter_tree()
+        gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
 
     def set_frequencies():
-        gui.fringes.f = "auto"
+        gui.fringes.f = 1
         update_parameter_tree()
+        gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
 
     gui.params.param("set", "N").sigActivated.connect(set_shifts)
     gui.params.param("set", "l").sigActivated.connect(set_wavelengths)

@@ -1,5 +1,6 @@
 import numpy as np
 import os
+# os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import functools
 
 from pyqtgraph.Qt import QtWidgets
@@ -15,7 +16,7 @@ import fringes as frng
 
 config = frng.Fringes._loader
 
-image = {
+image = {  # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
     ".bmp": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".dip": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),  # i.e. ".bmp"
     # ".jpeg": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
@@ -29,10 +30,15 @@ image = {
     # ".ppm": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".pxm": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".pnm": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+    # ".pfm": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".sr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".ras": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     ".tiff": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     ".tif": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+    # ".exr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+    # ".hdr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+    # ".pic": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+
 }
 
 binary = {
@@ -174,6 +180,7 @@ def set_logic(gui):
                         is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
                         is_img_dtype = v.dtype in (bool, np.uint8, np.uint16) or \
                                        v.dtype in (np.float32,) and np.min(v) >= 0 and np.max(v) <= 1  # todo: np.float16, np.float64
+                        is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)
 
                         if is_img_dtype and is_img_shape:  # save as image
                             fname = os.path.join(path, f"{k}.tif")
@@ -182,6 +189,8 @@ def set_logic(gui):
                             for t in range(T):
                                 fname = os.path.join(path, f"{k}_{str(t + 1).zfill(len(str(T)))}.tif")
                                 cv2.imwrite(fname, v[t][..., color_order])
+                        # elif is_exr_dtype:
+                        #     pass  # todo
                         else:  # save as numpy array
                             np.save(os.path.join(path, f"{k}.npy"), v)
                 else:  # executes only after the loop completes normally
