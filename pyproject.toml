@@ -9,9 +9,8 @@ repository = "https://github.com/comimag/fringes-gui"
 keywords = ["phase shifting", "fringe analysis", "fringe projection", "deflectometry", "computational imaging"]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
-# fringes = "^0.1.7"
-fringes = {path = "../fringes", develop = true}
+python = "^3.10,<3.13"
+fringes = "^0.2.1, <0.2.2"
 pyqt6 = "^6.4.2"
 pyqtgraph = "^0.13.2"
 opencv-contrib-python = "^4.7.0"

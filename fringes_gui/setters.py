@@ -116,9 +116,10 @@ def set_functionality(gui):
             # workaround for problem of changing an element of a property object
             val_old = getattr(gui.fringes, "_" + key).copy()
             if key == "N":
-                if val == 1:
-                    val_old[:, :] = 1  # enable SSB
-                elif gui.fringes.FDM:
+                # if val == 1:
+                #     val_old[:, :] = 1  # enable FTM
+                # elif gui.fringes.FDM:
+                if gui.fringes.FDM:
                     val_old[:, :] = val
                 elif gui.visibility in ["Guru", "Experimental"] or gui.fringes.FDM:
                     val_old[d, k] = val
@@ -153,6 +154,7 @@ def set_functionality(gui):
                 gui.params.param("vid", "T").setLimits((3, gui.fringes._Tmax))
                 gui.params.param("vid", "C").hide()
                 gui.params.param("vid", "alpha").hide()
+                gui.params.param("vid", "L").hide()
                 gui.params.param("sys", "grid").setValue(gui.fringes.defaults["grid"])
                 gui.params.param("sys", "grid").hide()
                 gui.params.param("sys", "angle").setValue(gui.fringes.defaults["angle"])
@@ -167,13 +169,15 @@ def set_functionality(gui):
                 gui.params.param("set", "lmin").setValue(gui.fringes.defaults["lmin"])
                 gui.params.param("set", "lmin").hide()
                 gui.params.param("set", "vmax").hide()
-                gui.params.param("val").hide()
-                gui.params.param("val", "dtype").setValue(gui.fringes.defaults["dtype"])
-                gui.params.param("val", "A").setValue(gui.fringes.defaults["A"])
-                gui.params.param("val", "B").setValue(gui.fringes.defaults["B"])
-                gui.params.param("val", "beta").setValue(gui.fringes.defaults["beta"])
-                gui.params.param("val", "V").setValue(gui.fringes.defaults["V"])
-                gui.params.param("val", "gamma").setValue(gui.fringes.defaults["gamma"])
+                gui.params.param("set", "lopt").hide()
+                gui.params.param("set", "vopt").hide()
+                gui.params.param("int").hide()
+                gui.params.param("int", "dtype").setValue(gui.fringes.defaults["dtype"])
+                gui.params.param("int", "A").setValue(gui.fringes.defaults["A"])
+                gui.params.param("int", "B").setValue(gui.fringes.defaults["B"])
+                gui.params.param("int", "beta").setValue(gui.fringes.defaults["beta"])
+                gui.params.param("int", "V").setValue(gui.fringes.defaults["V"])
+                gui.params.param("int", "gamma").setValue(gui.fringes.defaults["gamma"])
                 gui.params.param("mux").hide()
 
                 gui.params.param("mux", "SDM").setValue(gui.fringes.defaults["SDM"])
@@ -189,11 +193,12 @@ def set_functionality(gui):
                 gui.params.param("uwr", "verbose").setValue(gui.fringes.defaults["verbose"])
                 gui.params.param("uwr", "verbose").hide()
                 gui.params.param("quali").hide()
-                gui.params.param("quali", "dark").setValue(gui.fringes.defaults["dark"])
         elif gui.visibility == "Expert":
             with gui.params.treeChangeBlocker():
                 gui.params.param("vid", "T").setLimits((3, gui.fringes._Tmax))
+                gui.params.param("vid", "C").hide()
                 gui.params.param("vid", "alpha").hide()
+                gui.params.param("vid", "L").hide()
                 gui.params.param("sys", "grid").setValue(gui.fringes.defaults["grid"])
                 gui.params.param("sys", "grid").hide()
                 gui.params.param("sys", "angle").setValue(gui.fringes.defaults["angle"])
@@ -205,12 +210,14 @@ def set_functionality(gui):
                 gui.params.param("set", "o").show()
                 gui.params.param("set", "lmin").show()
                 gui.params.param("set", "vmax").hide()
-                gui.params.param("val").show()
-                gui.params.param("val", "dtype").setValue(gui.fringes.defaults["dtype"])
-                gui.params.param("val", "dtype").hide()
-                gui.params.param("val", "Imax").setValue(gui.fringes.Imax)
-                gui.params.param("val", "Imax").hide()
-                gui.params.param("val", "gamma").show()
+                gui.params.param("set", "lopt").hide()
+                gui.params.param("set", "vopt").hide()
+                gui.params.param("int").show()
+                gui.params.param("int", "dtype").setValue(gui.fringes.defaults["dtype"])
+                gui.params.param("int", "dtype").hide()
+                gui.params.param("int", "Imax").setValue(gui.fringes.Imax)
+                gui.params.param("int", "Imax").hide()
+                gui.params.param("int", "gamma").show()
                 gui.params.param("mux").hide()
                 gui.params.param("mux", "SDM").setValue(gui.fringes.defaults["SDM"])
                 gui.params.param("mux", "WDM").setValue(gui.fringes.defaults["WDM"])
@@ -222,24 +229,35 @@ def set_functionality(gui):
                 gui.params.param("uwr", "mode").hide()
                 gui.params.param("uwr", "Vmin").setValue(gui.fringes.defaults["Vmin"])
                 gui.params.param("uwr", "Vmin").hide()
+                gui.params.param("uwr", "umax").setValue(gui.fringes.defaults["umax"])
+                gui.params.param("uwr", "umax").hide()
                 gui.params.param("uwr", "verbose").show()
                 gui.params.param("quali").show()
+                gui.params.param("quali", "magnification").hide()  # Experimental
+                gui.params.param("quali", "PSF").hide()  # Experimental
+                gui.params.param("quali", "gain").hide()  # Experimental
+                gui.params.param("quali", "gain").hide()  # Experimental
                 gui.params.param("quali", "dark").hide()  # Experimental
                 gui.params.param("quali", "quant").hide()  # Experimental
                 gui.params.param("quali", "shot").hide()  # Experimental
         elif gui.visibility == "Guru":
             with gui.params.treeChangeBlocker():
                 gui.params.param("vid", "T").setLimits((1, gui.fringes._Tmax))
+                gui.params.param("vid", "C").show()
                 gui.params.param("sys", "grid").setValue(gui.fringes.defaults["grid"])
                 gui.params.param("sys", "grid").hide()  # todo: experimantal -> guru
                 gui.params.param("sys", "angle").setValue(gui.fringes.defaults["angle"])
                 gui.params.param("sys", "angle").hide()  # todo: experimantal -> guru
                 gui.params.param("vid", "alpha").show()
+                gui.params.param("vid", "L").show()
                 gui.params.param("set", "K").setLimits((1, (gui.fringes._Nmax - 1) / 2 / gui.fringes.D if gui.fringes.FDM else gui.fringes._Kmax))
                 gui.params.param("set", "f").show()
-                # gui.params.param("set", "vmax").show()
-                gui.params.param("val", "dtype").show()
-                gui.params.param("val", "Imax").show()
+                gui.params.param("set", "lmin").show()
+                gui.params.param("set", "vmax").show()
+                gui.params.param("set", "lopt").hide()  # todo: experimantal -> guru
+                gui.params.param("set", "vopt").hide()  # todo: experimantal -> guru
+                gui.params.param("int", "dtype").show()
+                gui.params.param("int", "Imax").show()
                 gui.params.param("col", "H").setLimits((1, gui.fringes._Hmax))
                 gui.params.param("col", "H").show()
                 gui.params.param("mux").show()
@@ -248,7 +266,13 @@ def set_functionality(gui):
                 gui.params.param("uwr", "mode").hide()  # todo: experimantal -> guru
                 gui.params.param("uwr", "Vmin").setValue(gui.fringes.defaults["Vmin"])
                 gui.params.param("uwr", "Vmin").hide()  # todo: experimantal -> guru
+                gui.params.param("uwr", "umax").setValue(gui.fringes.defaults["umax"])
+                gui.params.param("uwr", "umax").hide()  # todo: experimantal -> guru
                 gui.params.param("quali").show()
+                gui.params.param("quali", "magnification").hide()  # todo: experimantal -> guru
+                gui.params.param("quali", "PSF").hide()  # todo: experimantal -> guru
+                gui.params.param("quali", "gain").hide()  # todo: experimantal -> guru
+                gui.params.param("quali", "y0").hide()  # todo: experimantal -> guru
                 gui.params.param("quali", "dark").hide()  # todo: experimantal -> guru
                 gui.params.param("quali", "quant").hide()  # todo: experimantal -> guru
                 gui.params.param("quali", "shot").hide()  # todo: experimantal -> guru
@@ -260,8 +284,15 @@ def set_functionality(gui):
             with gui.params.treeChangeBlocker():
                 gui.params.param("sys", "grid").show()
                 gui.params.param("sys", "angle").show()
+                gui.params.param("set", "lopt").show()
+                gui.params.param("set", "vopt").show()
                 gui.params.param("uwr", "mode").show()
                 gui.params.param("uwr", "Vmin").show()
+                gui.params.param("uwr", "umax").show()
+                gui.params.param("quali", "magnification").show()
+                gui.params.param("quali", "PSF").show()
+                gui.params.param("quali", "gain").show()
+                gui.params.param("quali", "gain").show()
                 gui.params.param("quali", "dark").show()
                 gui.params.param("quali", "quant").show()
                 gui.params.param("quali", "shot").show()
@@ -308,7 +339,7 @@ def set_functionality(gui):
             gui.params.param("sys", "D", "axis").show(gui.fringes.D == 1)
 
             gui.params.param("vid", "T").setValue(gui.fringes.T)
-            gui.params.param("vid", "T").setLimits((1 if gui.visibility == "Guru" else 3, gui.fringes._Tmax))
+            gui.params.param("vid", "T").setLimits((1 if gui.visibility in ["Guru", "Experimental"] else 3, gui.fringes._Tmax))
 
             gui.params.param("vid", "Y").setLimits((1, min(gui.fringes._Ymax, gui.fringes._Pmax / gui.fringes.X)))
             gui.params.param("vid", "Y").setValue(gui.fringes.Y)
@@ -348,7 +379,7 @@ def set_functionality(gui):
                                         "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][
                                             0, 0],
                                         "limits": (max(gui.fringes.Nmin,
-                                                       1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
+                                                       1 if gui.visibility in ["Experimental"] else 2 if gui.visibility in ["Guru", "Expert"] else 3),
                                                    gui.fringes._Nmax),
                                         "tip": gui.fringes.__class__.N.__doc__,
                                     }
@@ -361,7 +392,7 @@ def set_functionality(gui):
                                     "value": gui.fringes._N[d, k],
                                     "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
                                     "limits": (max(gui.fringes.Nmin,
-                                                   1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
+                                                   1 if gui.visibility  in ["Experimental"] else 2 if gui.visibility in ["Guru", "Expert"] else 3),
                                                gui.fringes._Nmax),
                                     "tip": gui.fringes.__class__.N.__doc__,
                                 }
@@ -410,14 +441,14 @@ def set_functionality(gui):
                         if gui.fringes.FDM:  # all shifts must be equal; hence create only one generic index "i"
                             if d == k == 0:
                                 gui.params.param("set", "N", "N" + "ᵢ").setLimits((max(gui.fringes.Nmin,
-                                                                                       1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
+                                                                                       1 if gui.visibility  in ["Guru", "Experimental"] else 2 if gui.visibility == "Expert" else 3),
                                                                                    gui.fringes._Nmax))
                                 gui.params.param("set", "N", "N" + "ᵢ").setValue(gui.fringes._N[d, k])
                                 gui.params.param("set", "N", "N" + "ᵢ").setDefault(
                                     gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0])
                         else:
                             gui.params.param("set", "N", "N" + id).setLimits((max(gui.fringes.Nmin,
-                                                                                  1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
+                                                                                  1 if gui.visibility  in ["Guru", "Experimental"] else 2 if gui.visibility == "Expert" else 3),
                                                                               gui.fringes._Nmax))
                             gui.params.param("set", "N", "N" + id).setValue(gui.fringes._N[d, k])
                             gui.params.param("set", "N", "N" + id).setDefault(
@@ -442,26 +473,30 @@ def set_functionality(gui):
 
             gui.params.param("set", "vmax").setValue(gui.fringes.vmax)
 
-            gui.params.param("set", "UMR").setValue(gui.fringes.UMR.min())
+            gui.params.param("set", "lopt").setValue(gui.fringes.lopt)
 
-            gui.params.param("val", "dtype").setValue(gui.fringes.dtype)
+            gui.params.param("set", "vopt").setValue(gui.fringes.vopt)
 
-            gui.params.param("val", "Imax").setValue(gui.fringes.Imax)
+            gui.params.param("quali", "UMR").setValue(gui.fringes.UMR.min())
 
-            gui.params.param("val", "A").setLimits((gui.fringes.Amin, gui.fringes.Amax))
-            gui.params.param("val", "A").setValue(gui.fringes.A)
-            gui.params.param("val", "A").setDefault(gui.fringes.Imax / 2)
+            gui.params.param("int", "dtype").setValue(gui.fringes.dtype)
 
-            gui.params.param("val", "B").setLimits((0, gui.fringes.Bmax))
-            gui.params.param("val", "B").setValue(gui.fringes.B)
-            gui.params.param("val", "B").setDefault(gui.fringes.Imax / 2)
+            gui.params.param("int", "Imax").setValue(gui.fringes.Imax)
 
-            gui.params.param("val", "beta").setLimits((0, gui.fringes.betamax))
-            gui.params.param("val", "beta").setValue(gui.fringes.beta)
+            gui.params.param("int", "A").setLimits((gui.fringes.Amin, gui.fringes.Amax))
+            gui.params.param("int", "A").setValue(gui.fringes.A)
+            gui.params.param("int", "A").setDefault(gui.fringes.Imax / 2)
 
-            gui.params.param("val", "V").setValue(gui.fringes.V)
+            gui.params.param("int", "B").setLimits((0, gui.fringes.Bmax))
+            gui.params.param("int", "B").setValue(gui.fringes.B)
+            gui.params.param("int", "B").setDefault(gui.fringes.Imax / 2)
 
-            gui.params.param("val", "gamma").setValue(gui.fringes.gamma)
+            gui.params.param("int", "beta").setLimits((0, gui.fringes.betamax))
+            gui.params.param("int", "beta").setValue(gui.fringes.beta)
+
+            gui.params.param("int", "V").setValue(gui.fringes.V)
+
+            gui.params.param("int", "gamma").setValue(gui.fringes.gamma)
 
             gui.params.param("col").setOpts(expanded=gui.fringes.H > 1 or np.any(gui.fringes.h != 255))
 
@@ -508,23 +543,33 @@ def set_functionality(gui):
             gui.params.param("mux", "FDM", "static").setValue(gui.fringes.static)
             gui.params.param("mux", "FDM", "static").show(gui.fringes.FDM)
 
-            gui.params.param("uwr", "PU").setValue(gui.fringes.PU)
+            gui.params.param("uwr", "uwr").setValue(gui.fringes.uwr)
 
             gui.params.param("uwr", "mode").setValue(gui.fringes.mode)
 
             gui.params.param("uwr", "Vmin").setValue(gui.fringes.Vmin)
 
+            gui.params.param("uwr", "umax").setValue(gui.fringes.umax)
+
             gui.params.param("uwr", "verbose").setValue(gui.fringes.verbose)
 
             gui.params.param("quali", "eta").setValue(gui.fringes.eta.max())
 
+            gui.params.param("quali", "magnification").setValue(gui.fringes.magnification)
+
+            gui.params.param("quali", "PSF").setValue(gui.fringes.PSF)
+
             gui.params.param("quali", "dark").setValue(gui.fringes.dark)
+
+            gui.params.param("quali", "y0").setValue(gui.fringes.y0)
 
             gui.params.param("quali", "quant").setValue(gui.fringes.quant)
 
             gui.params.param("quali", "shot").setValue(gui.fringes.shot)
 
-            gui.params.param("quali", "u").setValue(gui.fringes.u)
+            gui.params.param("quali", "u").setValue(gui.fringes.u.max())
+
+            gui.params.param("quali", "SNR").setValue(gui.fringes.SNRdB.max())
 
             gui.params.param("quali", "DR").setValue(gui.fringes.DRdB.max())
 

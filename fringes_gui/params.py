@@ -24,10 +24,10 @@ def set_params(gui):
                f"and easy to use.\n"
                f"\u2B9A Expert: Features that require a more in-depth knowledge of the system "
                f"functionality. This is the preferred visibility level for all advanced features.\n"
-               f"\u2B9A Guru: - Guru: Advanced features that usually only people"
+               f"\u2B9A Guru: Advanced features that usually only people"
                f"with a sound background in phase shifting can make good use of.\n"
-               f"\u2B9A Experimental: New features that have not been tested yet "
-               f"and the system might probably crash at some point.",
+               f"\u2B9A Experimental: New features that have not been tested yet. "
+               f"The system might crash at some point.",
     }
     log = {
         "title": "Logging",
@@ -52,7 +52,7 @@ def set_params(gui):
                 "type": "int",
                 "value": gui.fringes.T,
                 "default": gui.fringes.defaults["T"],
-                "limits": (1 if gui.visibility == "Guru" else 3, gui.fringes._Tmax),
+                "limits": (1 if gui.visibility in ["Experimental", "Guru"] else 3, gui.fringes._Tmax),
                 "tip": gui.fringes.__class__.T.__doc__,
             },
             {
@@ -83,7 +83,7 @@ def set_params(gui):
                 "type": "int",
                 "value": gui.fringes.C,
                 "readonly": True,
-                "visible": gui.visibility == "Guru",
+                "visible": gui.visibility in ["Experimental", "Guru"],
                 "tip": gui.fringes.__class__.C.__doc__,
             },
             {
@@ -95,7 +95,7 @@ def set_params(gui):
                 "limits": (1, gui.fringes._alphamax),
                 "step": 0.1,
                 "decimals": gui.digits,
-                "visible": gui.visibility == "Guru",
+                "visible": gui.visibility in ["Experimental", "Guru"],
                 "tip": gui.fringes.__class__.alpha.__doc__,
             },
             {
@@ -106,6 +106,7 @@ def set_params(gui):
                 "decimals": gui.digits,
                 "suffix": "px",
                 "readonly": True,
+                "visible": gui.visibility in ["Experimental", "Guru"],
                 "tip": gui.fringes.__class__.L.__doc__,
             },
 
@@ -123,7 +124,7 @@ def set_params(gui):
                     "value": gui.fringes.grid,
                     "default": gui.fringes.defaults["grid"],
                     "limits": gui.fringes._grids,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.grid.__doc__,
                 },
                 {
@@ -135,7 +136,7 @@ def set_params(gui):
                     "limits": (-360, 360),
                     "decimals": gui.digits,
                     "suffix": "°",
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.angle.__doc__,
                 },
                 {
@@ -186,16 +187,16 @@ def set_params(gui):
                             "type": "int",
                             "value": gui.fringes._N[d, k],
                             "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
-                            "limits": (max(gui.fringes.Nmin, 1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3), gui.fringes._Nmax),
+                            "limits": (max(gui.fringes.Nmin, 1 if gui.visibility in ["Experimental"] else 2 if gui.visibility in ["Guru", "Expert"] else 3), gui.fringes._Nmax),
                             "tip": gui.fringes.__class__.N.__doc__,
                         } for d in range(gui.fringes.D) for k in range(gui.fringes.K)
-                    ] if gui.visibility == "Guru" or gui.fringes.N.ndim > 1 else [  # todo: FDM: N_i
+                    ] if gui.visibility in ["Experimental", "Guru"] or gui.fringes.N.ndim > 1 else [  # todo: FDM: N_i
                         {
                             "name": "N" + str(k).translate(gui.sub),
                             "type": "int",
                             "value": gui.fringes.N[k],
                             "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
-                            "limits": (max(gui.fringes.Nmin, 1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3), gui.fringes._Nmax),
+                            "limits": (max(gui.fringes.Nmin, 1 if gui.visibility in ["Experimental"] else 2 if gui.visibility in ["Guru", "Expert"] else 3), gui.fringes._Nmax),
                             "tip": gui.fringes.__class__.N.__doc__,
                         } for k in range(gui.fringes.K)
                     ],
@@ -216,7 +217,7 @@ def set_params(gui):
                             "decimals": gui.digits,
                             "tip": gui.fringes.__class__.l.__doc__,
                         } for d in range(gui.fringes.D) for k in range(gui.fringes.K)
-                    ] if gui.visibility == "Guru" or gui.fringes.l.ndim > 1 else [
+                    ] if gui.visibility in ["Experimental", "Guru"] or gui.fringes.l.ndim > 1 else [
                         {
                             "title": "\u03BB" + str(k).translate(gui.sub),
                             "name": "l" + str(k).translate(gui.sub),
@@ -245,7 +246,7 @@ def set_params(gui):
                             "limits": (0, gui.fringes.vmax),
                             "decimals": gui.digits,
                             "tip": gui.fringes.__class__.v.__doc__,
-                        } for d in range(gui.fringes.D) for k in range(gui.fringes.K)] if gui.visibility == "Guru" or gui.fringes.v.ndim > 1 else [
+                        } for d in range(gui.fringes.D) for k in range(gui.fringes.K)] if gui.visibility in ["Experimental", "Guru"] or gui.fringes.v.ndim > 1 else [
                         {
                             "title": "\u03BD" + str(k).translate(gui.sub),
                             "name": "v" + str(k).translate(gui.sub),
@@ -262,7 +263,7 @@ def set_params(gui):
                     "title": "Frequencies",
                     "name": "f",
                     "type": "action",
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": "Reset values to defaults.",
                     "children": [
                         {
@@ -275,7 +276,7 @@ def set_params(gui):
                             "readonly": gui.fringes.FDM and gui.fringes.static,
                             "tip": gui.fringes.__class__.f.__doc__,
                         } for d in range(gui.fringes.D) for k in range(gui.fringes.K)
-                    ] if gui.visibility == "Guru" or gui.fringes.FDM or gui.fringes.f.ndim > 1 else [
+                    ] if gui.visibility in ["Experimental", "Guru"] or gui.fringes.FDM or gui.fringes.f.ndim > 1 else [
                         {
                             "name": "f" + str(k).translate(gui.sub),
                             "type": "float",
@@ -311,6 +312,7 @@ def set_params(gui):
                     "title": "\u03BB\u2098\u1D62\u2099",
                     "name": "lmin",
                     "type": "int",
+                    "visible": gui.visibility in ["Experimental", "Guru", "Expert"],
                     "value": gui.fringes.lmin,
                     "default": gui.fringes.defaults["lmin"],
                     "limits": (gui.fringes._lminmin, None),
@@ -329,20 +331,33 @@ def set_params(gui):
                     "tip": gui.fringes.__class__.vmax.__doc__,
                 },
                 {
-                    "title": "Range",
-                    "name": "UMR",
-                    "type": "float",
-                    "value": gui.fringes.UMR.min(),
+                    "title": "\u03BB\u2092\u209A\u209C",
+                    "name": "lopt",
+                    "type": "int",
+                    "value": gui.fringes.lopt,
+                    # "default": gui.fringes.defaults["lopt"],
                     "decimals": gui.digits,
-                    "suffix": " px",
                     "readonly": True,
-                    "tip": gui.fringes.__class__.UMR.__doc__,
+                    "suffix": "px",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
+                    "tip": gui.fringes.__class__.lopt.__doc__,
+                },
+                {
+                    "title": "\u03BD\u2092\u209A\u209C",
+                    "name": "vopt",
+                    "type": "float",
+                    "value": gui.fringes.vopt,
+                    # "default": gui.fringes.defaults["vopt"],
+                    "decimals": gui.digits,
+                    "readonly": True,
+                    "visible": False,  # todo
+                    "tip": gui.fringes.__class__.vopt.__doc__,
                 },
             ]
         }
-    val = {
-            "title": "Values",
-            "name": "val",
+    int = {
+            "title": "Intensities",
+            "name": "int",
             "type": "group",
             "children": [
                 {
@@ -352,7 +367,7 @@ def set_params(gui):
                     "value": gui.fringes.dtype,
                     "default": gui.fringes.defaults["dtype"],
                     "limits": gui.fringes._dtypes,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.dtype.__doc__,
                 },
                 {
@@ -361,7 +376,7 @@ def set_params(gui):
                     "type": "int",
                     "value": gui.fringes.Imax,
                     "readonly": True,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.Imax.__doc__,
                 },
                 {
@@ -420,10 +435,10 @@ def set_params(gui):
             ],
         }
     col = {
-        "title": "Color",
+        "title": "Coloring",
         "name": "col",
         "type": "group",
-        "visible": gui.visibility == "Guru",
+        "visible": gui.visibility in ["Experimental", "Guru"],
         "expanded": gui.fringes.H > 1 or np.any(gui.fringes.h != 255),
         "children": [
             {
@@ -458,7 +473,7 @@ def set_params(gui):
             "title": "Multiplexing",
             "name": "mux",
             "type": "group",
-            "visible": gui.visibility == "Guru",
+            "visible": gui.visibility in ["Experimental", "Guru"],
             "expanded": gui.fringes.FDM or gui.fringes.SDM or gui.fringes.WDM,
             "tip": "Multiplexing method.",
             "children": [
@@ -515,11 +530,11 @@ def set_params(gui):
             "children": [
                 {
                     "title": "Method",
-                    "name": "PU",
+                    "name": "uwr",
                     "type": "str",
-                    "value": gui.fringes.PU,
+                    "value": gui.fringes.uwr,
                     "readonly": True,
-                    "tip": gui.fringes.__class__.PU.__doc__,
+                    "tip": gui.fringes.__class__.uwr.__doc__,
                 },
                 {
                     "title": "Mode",
@@ -528,11 +543,11 @@ def set_params(gui):
                     "value": gui.fringes.mode,
                     "default": gui.fringes.defaults["mode"],
                     "limits": gui.fringes._modes,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.mode.__doc__,
                 },
                 {
-                    "title": "V\u2098\u1D62\u2099",  # todo: Vmin
+                    "title": "V\u2098\u1D62\u2099",
                     "name": "Vmin",
                     "type": "float",
                     "value": gui.fringes.Vmin,
@@ -540,8 +555,20 @@ def set_params(gui):
                     "limits": (0, 1),
                     "step": 0.1,
                     "decimals": gui.digits,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.Vmin.__doc__
+                },
+                {
+                    "title": "u\u2098\u2090\u2093",
+                    "name": "umax",
+                    "type": "float",
+                    "value": gui.fringes.umax,
+                    "default": gui.fringes.defaults["umax"],
+                    "limits": (0, gui.fringes.L / 2),  # todo: r.max() / 2
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "visible": gui.visibility in ["Experimental"],
+                    "tip": gui.fringes.__class__.umax.__doc__
                 },
                 {
                     "title": "Verbose",
@@ -560,6 +587,16 @@ def set_params(gui):
             "visible": gui.visibility in ["Expert", "Guru"],
             "children": [
                 {
+                    "title": "Range",
+                    "name": "UMR",
+                    "type": "float",
+                    "value": gui.fringes.UMR.min(),
+                    "decimals": gui.digits,
+                    "suffix": " px",
+                    "readonly": True,
+                    "tip": gui.fringes.__class__.UMR.__doc__,
+                },
+                {
                     "title": "Efficiency",  # \u03B7
                     "name": "eta",
                     "type": "float",
@@ -569,15 +606,67 @@ def set_params(gui):
                     "tip": gui.fringes.__class__.eta.__doc__,
                 },
                 {
+                    "title": "Magnification",
+                    "name": "magnification",
+                    "type": "float",
+                    "value": gui.fringes.magnification,
+                    "defaults": 1,
+                    "limits": (0, None),
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "visible": gui.visibility in ["Experimental"],
+                    "tip": gui.fringes.__class__.magnification.__doc__,
+                },
+                {
+                    "title": "Point Spread Function",
+                    "name": "PSF",
+                    "type": "float",
+                    "value": gui.fringes.PSF,
+                    "defaults": 0,
+                    "limits": (0, None),
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "suffix": " px",
+                    "visible": gui.visibility in ["Experimental"],
+                    "tip": gui.fringes.__class__.PSF.__doc__,
+                },
+                {
+                    "title": "System gain",
+                    "name": "gain",
+                    "type": "float",
+                    "value": gui.fringes.gain,
+                    "defaults": 0,
+                    "limits": (0, 1),
+                    "step": 0.01,
+                    "decimals": gui.digits,
+                    "suffix": " DN/e\u207B",
+                    "visible": gui.visibility in ["Experimental"],
+                    "tip": gui.fringes.__class__.gain.__doc__,
+                },
+                {
+                    "title": "Dark Current",
+                    "name": "y0",
+                    "type": "float",
+                    "value": gui.fringes.y0,
+                    "defaults": 0,
+                    "limits": (0, gui.fringes.Imax),
+                    "step": 1,
+                    "decimals": gui.digits,
+                    "suffix": " DN/e\u207B",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
+                    "tip": gui.fringes.__class__.y0.__doc__
+                },
+                {
                     "title": "Dark Noise",
                     "name": "dark",
                     "type": "float",
                     "value": gui.fringes.dark,
-                    "defaults": gui.fringes.defaults["dark"],
+                    "defaults": 0,
                     "limits": (0, np.sqrt(gui.fringes.Imax)),
                     "step": 0.1,
                     "decimals": gui.digits,
-                    "visible": gui.visibility == "Guru",
+                    "suffix": " e\u207B",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.dark.__doc__
                 },
                 {
@@ -587,7 +676,7 @@ def set_params(gui):
                     "value": gui.fringes.quant,
                     "readonly": True,
                     "decimals": gui.digits,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.quant.__doc__
                 },
                 {
@@ -598,18 +687,28 @@ def set_params(gui):
                     "defaults": 0,
                     "decimals": gui.digits,
                     "readonly": True,
-                    "visible": gui.visibility == "Guru",
+                    "visible": gui.visibility in ["Experimental", "Guru"],
                     "tip": gui.fringes.__class__.shot.__doc__
                 },
                 {
                     "title": "Uncertainty\u2098\u1D62\u2099",
                     "name": "u",
                     "type": "float",
-                    "value": gui.fringes.u,
+                    "value": gui.fringes.u.max(),
                     "decimals": gui.digits,
                     "suffix": "px",
                     "readonly": True,
                     "tip": gui.fringes.__class__.u.__doc__
+                },
+                {
+                    "title": "Signal-to-noise ratio",
+                    "name": "SNR",
+                    "type": "float",
+                    "value": gui.fringes.SNRdB.max(),
+                    "decimals": gui.digits,
+                    "suffix": "dB",
+                    "readonly": True,
+                    "tip": gui.fringes.__class__.SNRdB.__doc__,
                 },
                 {
                     "title": "Dynamic Range",
@@ -624,4 +723,4 @@ def set_params(gui):
             ]
         }
 
-    gui.params = [vis, log, vid, sys, set, val, col, mux, uwr, quali]
+    gui.params = [vis, log, vid, sys, set, int, col, mux, uwr, quali]

@@ -74,7 +74,6 @@ def set_logic(gui):
 
     def reset():
         with gui.params.treeChangeBlocker():
-            gui.params.param("vis").setValue("Expert")  # should be the same as in gui.py
             gui.fringes.reset()
             gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
             gui.update_parameter_tree()
@@ -293,6 +292,8 @@ def set_logic(gui):
             delattr(gui.con, "residuals")
         if hasattr(gui.con, "orders"):
             delattr(gui.con, "orders")
+        if hasattr(gui.con, "orders"):
+            delattr(gui.con, "uncertainty")
 
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
