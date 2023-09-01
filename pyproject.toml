@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fringes-GUI"
-version = "0.1.5"
+version = "0.2.0"
 description = "Graphical user interface for the 'fringes' package."
 license = "CC-BY-NC-SA-4.0"
 authors = ["Christian Kludt"]

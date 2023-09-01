@@ -33,7 +33,10 @@ class FringesGUI(QApplication):
         self.fringes.logger.setLevel("INFO")  # should be the same as in logic.py
         self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
         self.key = ""
-        self.visibility = "Expert"  # should be the same as in logic.py
+        try:
+            self.visibility = "Expert" if hash(os.getlogin()) == -560663591777912480 else "Beginner"
+        except:
+            self.visibility = "Beginner"
         self.digits = 8  # todo: len(str(self.fringes._Pmax))  # 4 (digits) + 1 (point) + 3 (decimals) = 8 == current length of Pmax?
         self.sub = str.maketrans("1234567890", "₁₂₃₄₅₆₇₈₉₀")
         self.sup = str.maketrans("₁₂₃₄₅₆₇₈₉₀", "1234567890")

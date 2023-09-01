@@ -310,7 +310,7 @@ def set_params(gui):
                 {
                     "title": "\u03BB\u2098\u1D62\u2099",
                     "name": "lmin",
-                    "type": "int",
+                    "type": "float",
                     "value": gui.fringes.lmin,
                     "default": gui.fringes.defaults["lmin"],
                     "limits": (gui.fringes._lminmin, None),
@@ -327,6 +327,24 @@ def set_params(gui):
                     "readonly": True,
                     "visible": False,  # todo
                     "tip": gui.fringes.__class__.vmax.__doc__,
+                },
+                {
+                    "title": "\u03BB\u2092\u209A\u209C",
+                    "name": "lopt",
+                    "type": "float",
+                    "value": gui.fringes.lopt,
+                    "limits": (gui.fringes._lmin, None),
+                    "suffix": "px",
+                    "tip": gui.fringes.__class__.lopt.__doc__,
+                },
+                {
+                    "title": "\u03BD\u2092\u209A\u209C",
+                    "name": "vopt",
+                    "type": "float",
+                    "value": gui.fringes.vopt,
+                    "limits": (0, gui.fringes.vmax),
+                    "suffix": "px",
+                    "tip": gui.fringes.__class__.vopt.__doc__,
                 },
                 {
                     "title": "Range",
@@ -385,7 +403,7 @@ def set_params(gui):
                     "tip": gui.fringes.__class__.B.__doc__,
                 },
                 {
-                    "title": "Offset",
+                    "title": "Exposure",
                     "name": "beta",
                     "type": "float",
                     "value": gui.fringes.beta,
@@ -532,7 +550,7 @@ def set_params(gui):
                     "tip": gui.fringes.__class__.mode.__doc__,
                 },
                 {
-                    "title": "V\u2098\u1D62\u2099",  # todo: Vmin
+                    "title": "V\u2098\u1D62\u2099",
                     "name": "Vmin",
                     "type": "float",
                     "value": gui.fringes.Vmin,
@@ -542,6 +560,18 @@ def set_params(gui):
                     "decimals": gui.digits,
                     "visible": gui.visibility == "Guru",
                     "tip": gui.fringes.__class__.Vmin.__doc__
+                },
+                {
+                    "title": "u\u2098\u2090\u2093",
+                    "name": "umax",
+                    "type": "float",
+                    "value": gui.fringes.umax,
+                    "default": gui.fringes.defaults["umax"],
+                    "limits": (0, gui.fringes.L),  # todo: ... / 2 due to circular distance
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "visible": gui.visibility == "Experimental",
+                    "tip": gui.fringes.__class__.umax.__doc__
                 },
                 {
                     "title": "Verbose",
@@ -567,6 +597,18 @@ def set_params(gui):
                     "decimals": gui.digits,
                     "readonly": True,
                     "tip": gui.fringes.__class__.eta.__doc__,
+                },
+                {
+                    "title": "System gain",
+                    "name": "gain",
+                    "type": "float",
+                    "value": gui.fringes.gain,
+                    "defaults": gui.fringes.defaults["gain"],
+                    "limits": (0, 1),
+                    "step": 0.1,
+                    "decimals": gui.digits,
+                    "visible": gui.visibility == "Guru",
+                    "tip": gui.fringes.__class__.gain.__doc__
                 },
                 {
                     "title": "Dark Noise",

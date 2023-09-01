@@ -291,8 +291,19 @@ def set_logic(gui):
             delattr(gui.con, "phase")
         if hasattr(gui.con, "residuals"):
             delattr(gui.con, "residuals")
-        if hasattr(gui.con, "orders"):
-            delattr(gui.con, "orders")
+        if hasattr(gui.con, "order"):
+            delattr(gui.con, "order")
+        if hasattr(gui.con, "uncertainty"):
+            delattr(gui.con, "uncertainty")
+        if hasattr(gui.con, "exposure"):
+            delattr(gui.con, "exposure")
+        if hasattr(gui.con, "visibility"):
+            delattr(gui.con, "visibility")
+
+        # todo: generic deletion
+        # for key in gui.fringes._verbose_output:
+        #     if hasattr(gui.con, key):
+        #         delattr(gui.con, key)
 
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
