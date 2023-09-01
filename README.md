@@ -4,6 +4,8 @@
 ![PyPI - License](https://img.shields.io/pypi/l/fringes-gui)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/fringes-gui)
 
+Graphical user interface for the [fringes](https://pypi.org/project/fringes/) package.
+
 ## Installation
 You can install `fringes-gui` directly from [PyPi](https://pypi.org/project/fringes-gui) via `pip`:
 
