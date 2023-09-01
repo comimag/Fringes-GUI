@@ -508,7 +508,7 @@ def set_functionality(gui):
             gui.params.param("mux", "FDM", "static").setValue(gui.fringes.static)
             gui.params.param("mux", "FDM", "static").show(gui.fringes.FDM)
 
-            gui.params.param("uwr", "PU").setValue(gui.fringes.PU)
+            gui.params.param("uwr", "uwr").setValue(gui.fringes.uwr)
 
             gui.params.param("uwr", "mode").setValue(gui.fringes.mode)
 
@@ -524,7 +524,7 @@ def set_functionality(gui):
 
             gui.params.param("quali", "shot").setValue(gui.fringes.shot)
 
-            gui.params.param("quali", "u").setValue(gui.fringes.u)
+            gui.params.param("quali", "u").setValue(gui.fringes.u.max())
 
             gui.params.param("quali", "DR").setValue(gui.fringes.DRdB.max())
 

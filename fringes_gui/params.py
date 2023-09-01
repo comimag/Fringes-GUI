@@ -515,11 +515,11 @@ def set_params(gui):
             "children": [
                 {
                     "title": "Method",
-                    "name": "PU",
+                    "name": "uwr",
                     "type": "str",
-                    "value": gui.fringes.PU,
+                    "value": gui.fringes.uwr,
                     "readonly": True,
-                    "tip": gui.fringes.__class__.PU.__doc__,
+                    "tip": gui.fringes.__class__.uwr.__doc__,
                 },
                 {
                     "title": "Mode",
@@ -605,7 +605,7 @@ def set_params(gui):
                     "title": "Uncertainty\u2098\u1D62\u2099",
                     "name": "u",
                     "type": "float",
-                    "value": gui.fringes.u,
+                    "value": gui.fringes.u.max(),
                     "decimals": gui.digits,
                     "suffix": "px",
                     "readonly": True,
