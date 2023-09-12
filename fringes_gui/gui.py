@@ -1,6 +1,7 @@
 import os
 import ctypes
 import logging as lg
+import hashlib
 
 import numpy as np
 import fringes as frng
@@ -22,7 +23,7 @@ class FringesGUI(QApplication):
     def __init__(self):
         super(FringesGUI, self).__init__([])
 
-        myappid = "Fringes-GUI"   # arbitrary string
+        myappid = "Fringes-GUI"  # arbitrary string
         if fringes_gui.__version__:
             myappid += f" {fringes_gui.__version__}"
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -34,7 +35,7 @@ class FringesGUI(QApplication):
         self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
         self.key = ""
         try:
-            self.visibility = "Expert" if hash(os.getlogin()) == -560663591777912480 else "Beginner"
+            self.visibility = "Expert" if hashlib.sha256(os.getlogin().encode("utf-8")).hexdigest() == '095d9cc941ca4d5a84fe0a707391c05549faa500406b3a43a26f20fa7a1bcb25' else "Beginner"
         except:
             self.visibility = "Beginner"
         self.digits = 8  # todo: len(str(self.fringes._Pmax))  # 4 (digits) + 1 (point) + 3 (decimals) = 8 == current length of Pmax?
@@ -78,18 +79,20 @@ class FringesGUI(QApplication):
         # Create docks, place them into the window one at a time.
         from pyqtgraph.dockarea.Dock import DockLabel
 
-        def updateStylePatched(self):  # from https://gist.github.com/matmr/72487a03da95b99db6ae
-            r = '3px'
+        def updateStylePatched(
+            self,
+        ):  # from https://gist.github.com/matmr/72487a03da95b99db6ae
+            r = "3px"
             if self.dim:
-                fg = '#fff'  # gray
+                fg = "#fff"  # gray
                 bg = "##6CC0A8"  # green brighter
                 border = "#6CC0A8"  # green brighter
             else:
-                fg = '#fff'  # white
+                fg = "#fff"  # white
                 bg = "#169D7C"  # green
                 border = "#169D7C"  # green
 
-            if self.orientation == 'vertical':
+            if self.orientation == "vertical":
                 self.vStyle = """DockLabel {
                     background-color : %s;
                     color : %s;
@@ -101,7 +104,13 @@ class FringesGUI(QApplication):
                     border-right: 2px solid %s;
                     padding-top: 3px;
                     padding-bottom: 3px;
-                }""" % (bg, fg, r, r, border)
+                }""" % (
+                    bg,
+                    fg,
+                    r,
+                    r,
+                    border,
+                )
                 self.setStyleSheet(self.vStyle)
             else:
                 self.hStyle = """DockLabel {
@@ -113,7 +122,13 @@ class FringesGUI(QApplication):
                     border-bottom-left-radius: 0px;
                     border-width: 0px;
                     border-bottom: 2px solid %s;
-                }""" % (bg, fg, r, r, border)
+                }""" % (
+                    bg,
+                    fg,
+                    r,
+                    r,
+                    border,
+                )
                 self.setStyleSheet(self.hStyle)
 
         DockLabel.updateStyle = updateStylePatched
@@ -121,8 +136,8 @@ class FringesGUI(QApplication):
         self.dock_attributes = Dock("Attributes", size=(15, 99))
         self.dock_methods = Dock("Methods", size=(15, 1))
         self.dock_viewer = Dock("Viewer", size=(70, 100))
-        self.dock_data = Dock("Data", size=(15, 30))
-        self.dock_log = Dock("Log", size=(15, 70))
+        self.dock_data = Dock("Data", size=(15, 50))
+        self.dock_log = Dock("Log", size=(15, 50))
 
         self.area.addDock(self.dock_attributes, "left")
         self.area.addDock(self.dock_viewer, "right", self.dock_attributes)
@@ -191,8 +206,8 @@ class FringesGUI(QApplication):
         self.zoomback_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+0"), self.win)  # todo
 
         self.plot = pg.PlotItem()
-        self.plot.setLabel(axis='left', text='y-axis')
-        self.plot.setLabel(axis='bottom', text='x-axis')  # todo: set label 'T-axis'
+        self.plot.setLabel(axis="left", text="y-axis")
+        self.plot.setLabel(axis="bottom", text="x-axis")  # todo: set label 'T-axis'
         self.imv = pg.ImageView(view=self.plot)
         # self.imv.ui.histogram.hide()
         # self.imv.ui.roiBtn.hide()
@@ -232,8 +247,9 @@ class FringesGUI(QApplication):
         class Container:
             @property
             def info(self):
-                info = [[str(k), str(v.shape), str(v.dtype)] for k, v in self.__dict__.items() if
-                        isinstance(v, np.ndarray)]
+                info = [
+                    [str(k), str(v.shape), str(v.dtype)] for k, v in self.__dict__.items() if isinstance(v, np.ndarray)
+                ]
                 return info
 
         self.con = Container()
@@ -298,7 +314,7 @@ class FringesGUI(QApplication):
 
     @property
     def WDMOK(self):
-        a = self.fringes._ismono
+        a = self.fringes._monochrome
         b = np.all(self.fringes.N == 3)
         e = not self.fringes.FDM
         return a and b and e
@@ -318,7 +334,7 @@ class FringesGUI(QApplication):
     @property
     def encodeOK(self):
         """True if unambiguous measurement range >= length."""
-        return np.all(self.fringes.UMR >= self.fringes.L)
+        return not self.fringes._ambiguous
 
     @property
     def dataOK(self):
@@ -335,9 +351,11 @@ class FringesGUI(QApplication):
     def decodeOK(self):
         """Return true if data present can be decoded."""
         I = (
-            getattr(self.con, self.key) if hasattr(self.con, self.key)
+            getattr(self.con, self.key)
+            if hasattr(self.con, self.key)
             # else self.con.raw if hasattr(self.con, "raw")
-            else self.con.fringes if hasattr(self.con, "fringes")
+            else self.con.fringes
+            if hasattr(self.con, "fringes")
             else None
         )
         return I is not None and hasattr(I, "ndim") and frng.vshape(I).shape[0] == self.fringes.T
@@ -349,7 +367,11 @@ class FringesGUI(QApplication):
 
     @property
     def curvatureOK(self):
-        return hasattr(self.con, "registration") and self.con.registration.shape[1] >= 2 and self.con.registration.shape[2] >= 2
+        return (
+            hasattr(self.con, "registration")
+            and self.con.registration.shape[1] >= 2
+            and self.con.registration.shape[2] >= 2
+        )
 
     @property
     def heightOK(self):

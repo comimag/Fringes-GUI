@@ -25,7 +25,8 @@ def set_functionality(gui):
     vis = gui.visibility
     if gui.visibility != "Guru":
         gui.params.param("vis").setValue(
-            "Guru")  # switching back from Guru mode prevents loading params which don't fit user options
+            "Guru"
+        )  # switching back from Guru mode prevents loading params which don't fit user options
     gui.params.param("vis").setValue(vis)
 
     def set_param(param, change):
@@ -37,7 +38,7 @@ def set_functionality(gui):
             return
 
         if gui.param_index + 1 < len(gui.param_buffer):
-            gui.param_buffer = deque(list(gui.param_buffer)[:gui.param_index + 1], maxlen=100)
+            gui.param_buffer = deque(list(gui.param_buffer)[: gui.param_index + 1], maxlen=100)
         gui.param_buffer.append(gui.params)
         gui.param_index = len(gui.param_buffer) - 1
         # print("added state to buffer")
@@ -49,8 +50,7 @@ def set_functionality(gui):
             if hasattr(gui.con, "coordinates"):
                 delattr(gui.con, "coordinates")
 
-        if key not in ["mode", "Vmin", "verbose"] or \
-                key == "axis" and gui.fringes.D == 2:
+        if key not in ["mode", "Vmin", "verbose"] or key == "axis" and gui.fringes.D == 2:
             if hasattr(gui.con, "fringes"):
                 delattr(gui.con, "fringes")
 
@@ -64,8 +64,11 @@ def set_functionality(gui):
             if gui.encode_checkbox.isChecked():
                 gui.encode()
 
-        if key not in ["alpha", "dtype", "bias", "amplitude", "visibility", "gamma"] or \
-                key == "axis" and gui.fringes.D == 2:
+        if (
+            key not in ["alpha", "dtype", "bias", "amplitude", "visibility", "gamma"]
+            or key == "axis"
+            and gui.fringes.D == 2
+        ):
             if hasattr(gui.con, "brightness"):
                 delattr(gui.con, "brightness")
 
@@ -78,8 +81,8 @@ def set_functionality(gui):
             if hasattr(gui.con, "phase"):
                 delattr(gui.con, "phase")
 
-            if hasattr(gui.con, "order"):
-                delattr(gui.con, "order")
+            if hasattr(gui.con, "orders"):
+                delattr(gui.con, "orders")
 
             if hasattr(gui.con, "residuals"):
                 delattr(gui.con, "residuals")
@@ -134,7 +137,9 @@ def set_functionality(gui):
                 else:
                     val_old[:, k] = val
             elif key == "h":
-                if val.red() == val.green() == val.blue() == 0:    # handle forbidden value 'black': set back to previous value
+                if (
+                    val.red() == val.green() == val.blue() == 0
+                ):  # handle forbidden value 'black': set back to previous value
                     gui.params.param("col", "H", "h" + id).setValue(gui.fringes.h[k])
                     return
                 else:
@@ -253,7 +258,12 @@ def set_functionality(gui):
                 gui.params.param("sys", "grid").hide()  # todo: experimantal -> guru
                 gui.params.param("sys", "angle").setValue(gui.fringes.defaults["angle"])
                 gui.params.param("sys", "angle").hide()  # todo: experimantal -> guru
-                gui.params.param("set", "K").setLimits((1, (gui.fringes._Nmax - 1) / 2 / gui.fringes.D if gui.fringes.FDM else gui.fringes._Kmax))
+                gui.params.param("set", "K").setLimits(
+                    (
+                        1,
+                        (gui.fringes._Nmax - 1) / 2 / gui.fringes.D if gui.fringes.FDM else gui.fringes._Kmax,
+                    )
+                )
                 gui.params.param("set", "f").show()
                 gui.params.param("set", "reverse").show()
                 gui.params.param("set", "o").show()
@@ -299,8 +309,17 @@ def set_functionality(gui):
         update_parameter_tree()
 
     def update_parameter_tree():
-        is2D = max(gui.fringes.N.ndim, gui.fringes.l.ndim, gui.fringes.v.ndim, gui.fringes.f.ndim) == 2 or \
-               gui.fringes.FDM or gui.visibility in ["Guru", "Experimental"]
+        is2D = (
+            max(
+                gui.fringes.N.ndim,
+                gui.fringes.l.ndim,
+                gui.fringes.v.ndim,
+                gui.fringes.f.ndim,
+            )
+            == 2
+            or gui.fringes.FDM
+            or gui.visibility in ["Guru", "Experimental"]
+        )
 
         children = gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
         children_N = 1 if gui.fringes.FDM else gui.fringes.D * gui.fringes.K if is2D else gui.fringes.K
@@ -310,10 +329,14 @@ def set_functionality(gui):
         c = gui.fringes.D != gui.params.param("sys", "D").value()
         d = gui.fringes.K != gui.params.param("set", "K").value()
         e = gui.fringes.FDM != gui.params.param("mux", "FDM").value()
-        f = gui.params.param("vis").value() in ["Guru", "Experimental"] and \
-            "," not in gui.params.param("set", "v").children()[0].name()
-        g = gui.params.param("vis").value() not in ["Guru", "Experimental"] and \
-            "," in gui.params.param("set", "v").children()[0].name()
+        f = (
+            gui.params.param("vis").value() in ["Guru", "Experimental"]
+            and "," not in gui.params.param("set", "v").children()[0].name()
+        )
+        g = (
+            gui.params.param("vis").value() not in ["Guru", "Experimental"]
+            and "," in gui.params.param("set", "v").children()[0].name()
+        )
         h = is2D and "," not in gui.params.param("set", "v").children()[0].name()
         i = not is2D and "," in gui.params.param("set", "v").children()[0].name()
 
@@ -375,11 +398,20 @@ def set_functionality(gui):
                                         "name": "N" + "ᵢ",
                                         "type": "int",
                                         "value": gui.fringes._N[d, k],
-                                        "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][
-                                            0, 0],
-                                        "limits": (max(gui.fringes.Nmin,
-                                                       1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
-                                                   gui.fringes._Nmax),
+                                        "default": gui.fringes._Nmin
+                                        if gui.fringes.FDM
+                                        else gui.fringes.defaults["N"][0, 0],
+                                        "limits": (
+                                            max(
+                                                gui.fringes._Nmin,
+                                                1
+                                                if gui.visibility == "Guru"
+                                                else 2
+                                                if gui.visibility == "Expert"
+                                                else 3,
+                                            ),
+                                            gui.fringes._Nmax,
+                                        ),
                                         "tip": gui.fringes.__class__.N.__doc__,
                                     }
                                 )
@@ -389,10 +421,14 @@ def set_functionality(gui):
                                     "name": "N" + id,
                                     "type": "int",
                                     "value": gui.fringes._N[d, k],
-                                    "default": gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
-                                    "limits": (max(gui.fringes.Nmin,
-                                                   1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
-                                               gui.fringes._Nmax),
+                                    "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
+                                    "limits": (
+                                        max(
+                                            gui.fringes._Nmin,
+                                            1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                                        ),
+                                        gui.fringes._Nmax,
+                                    ),
                                     "tip": gui.fringes.__class__.N.__doc__,
                                 }
                             )
@@ -428,8 +464,11 @@ def set_functionality(gui):
                                 "name": "f" + id,
                                 "type": "float",
                                 "value": gui.fringes._f[d, k],
-                                "default": gui.fringes._f[
-                                    d, k] if gui.fringes.FDM and gui.fringes.static else gui.fringes.D * k + k if gui.fringes.FDM else 1,
+                                "default": gui.fringes._f[d, k]
+                                if gui.fringes.FDM and gui.fringes.static
+                                else gui.fringes.D * k + k
+                                if gui.fringes.FDM
+                                else 1,
                                 "limits": (-gui.fringes.vmax, gui.fringes.vmax),
                                 "decimals": gui.digits,
                                 "readonly": gui.fringes.FDM and gui.fringes.static,
@@ -439,19 +478,33 @@ def set_functionality(gui):
                     else:  # update child params
                         if gui.fringes.FDM:  # all shifts must be equal; hence create only one generic index "i"
                             if d == k == 0:
-                                gui.params.param("set", "N", "N" + "ᵢ").setLimits((max(gui.fringes.Nmin,
-                                                                                       1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
-                                                                                   gui.fringes._Nmax))
+                                gui.params.param("set", "N", "N" + "ᵢ").setLimits(
+                                    (
+                                        max(
+                                            gui.fringes._Nmin,
+                                            1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                                        ),
+                                        gui.fringes._Nmax,
+                                    )
+                                )
                                 gui.params.param("set", "N", "N" + "ᵢ").setValue(gui.fringes._N[d, k])
                                 gui.params.param("set", "N", "N" + "ᵢ").setDefault(
-                                    gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0])
+                                    gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0]
+                                )
                         else:
-                            gui.params.param("set", "N", "N" + id).setLimits((max(gui.fringes.Nmin,
-                                                                                  1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3),
-                                                                              gui.fringes._Nmax))
+                            gui.params.param("set", "N", "N" + id).setLimits(
+                                (
+                                    max(
+                                        gui.fringes._Nmin,
+                                        1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                                    ),
+                                    gui.fringes._Nmax,
+                                )
+                            )
                             gui.params.param("set", "N", "N" + id).setValue(gui.fringes._N[d, k])
                             gui.params.param("set", "N", "N" + id).setDefault(
-                                gui.fringes.Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0])
+                                gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0]
+                            )
 
                         gui.params.param("set", "l", "l" + id).setLimits((gui.fringes.lmin, None))
                         gui.params.param("set", "l", "l" + id).setValue(gui.fringes._l[d, k])
@@ -478,15 +531,15 @@ def set_functionality(gui):
 
             gui.params.param("val", "Imax").setValue(gui.fringes.Imax)
 
-            gui.params.param("val", "A").setLimits((gui.fringes.Amin, gui.fringes.Amax))
+            gui.params.param("val", "A").setLimits((gui.fringes._Amin, gui.fringes._Amax))
             gui.params.param("val", "A").setValue(gui.fringes.A)
             gui.params.param("val", "A").setDefault(gui.fringes.Imax / 2)
 
-            gui.params.param("val", "B").setLimits((0, gui.fringes.Bmax))
+            gui.params.param("val", "B").setLimits((0, gui.fringes._Bmax))
             gui.params.param("val", "B").setValue(gui.fringes.B)
             gui.params.param("val", "B").setDefault(gui.fringes.Imax / 2)
 
-            gui.params.param("val", "beta").setLimits((0, gui.fringes.betamax))
+            gui.params.param("val", "beta").setLimits((0, gui.fringes._betamax))
             gui.params.param("val", "beta").setValue(gui.fringes.beta)
 
             gui.params.param("val", "V").setValue(gui.fringes.V)
@@ -495,10 +548,11 @@ def set_functionality(gui):
 
             gui.params.param("col").setOpts(expanded=gui.fringes.H > 1 or np.any(gui.fringes.h != 255))
 
-            if len(gui.params.param("col", "H").children()) != gui.fringes.H or \
-                    gui.params.param("col", "H").value() != gui.fringes.H or \
-                    gui.params.param("col", "M").value() != gui.fringes.M:  # remove and add cild params
-
+            if (
+                len(gui.params.param("col", "H").children()) != gui.fringes.H
+                or gui.params.param("col", "H").value() != gui.fringes.H
+                or gui.params.param("col", "M").value() != gui.fringes.M
+            ):  # remove and add cild params
                 gui.params.param("col", "H").clearChildren()
 
                 for h in range(gui.fringes.H):
@@ -510,7 +564,7 @@ def set_functionality(gui):
                             "value": gui.fringes.h[h],
                             "default": gui.fringes.defaults["h"][0],
                             "limits": (1, gui.fringes._Hmax),
-                            "readonly": gui.visibility in ["Beginner", "Expert"]
+                            "readonly": gui.visibility in ["Beginner", "Expert"],
                         }
                     )
             else:  # update cild params
@@ -566,6 +620,7 @@ def set_functionality(gui):
         gui.encode_button.setStyleSheet("" if gui.encodeOK else "QPushButton{color: red}")
         gui.decode_button.setEnabled(gui.decodeOK)
         gui.decode_key.setEnabled(gui.decodeOK)
+
     gui.update_parameter_tree = update_parameter_tree
 
     def set_shifts():

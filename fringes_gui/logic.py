@@ -1,5 +1,6 @@
 import numpy as np
 import os
+
 # os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import functools
 
@@ -38,7 +39,6 @@ image = {  # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3d
     # ".exr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".hdr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".pic": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
-
 }
 
 binary = {
@@ -91,9 +91,9 @@ def set_logic(gui):
             # directory=os.path.join(os.path.expanduser("~"), "Videos"),
             # options=QFileDialog.Option.DontUseNativeDialog,
             filter=f"All {tuple('*' + key for key in loader.keys())};;"
-                   f"Images {tuple('*' + key for key in image.keys())};;"
-                   f"Binary {tuple('*' + key for key in binary.keys())};;"
-                   f"Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", "")
+            f"Images {tuple('*' + key for key in image.keys())};;"
+            f"Binary {tuple('*' + key for key in binary.keys())};;"
+            f"Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", ""),
         )
 
         if flist[0]:
@@ -111,8 +111,9 @@ def set_logic(gui):
 
                     if len(flist[0]) > 1:
                         if ext not in image:
-                            gui.fringes.logger.error("Selected multiple files which aren't images. "
-                                                     "Terminated loading data.")
+                            gui.fringes.logger.error(
+                                "Selected multiple files which aren't images. " "Terminated loading data."
+                            )
                             return
 
                         # data is only one datum in list of data
@@ -131,8 +132,7 @@ def set_logic(gui):
                                 if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
                                     data[i + 1] = datum
                                 else:
-                                    gui.fringes.logger.error("Files in list dint't match. "
-                                                             "Terminated loading data.")
+                                    gui.fringes.logger.error("Files in list dint't match. " "Terminated loading data.")
                                     return
 
                         gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
@@ -174,12 +174,18 @@ def set_logic(gui):
                 for k, v in gui.con.__dict__.items():
                     if isinstance(v, np.ndarray) and v.size > 0:
                         T, Y, X, C = v.shape = frng.vshape(v).shape
-                        color_order = (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0  # compensate OpenCV color order
+                        color_order = (
+                            (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0
+                        )  # compensate OpenCV color order
                         color_channels = (1, 3, 4)
                         is_img_shape = v.ndim <= 2 or v.ndim == 3 and v.shape[-1] in color_channels
                         is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
-                        is_img_dtype = v.dtype in (bool, np.uint8, np.uint16) or \
-                                       v.dtype in (np.float32,) and np.min(v) >= 0 and np.max(v) <= 1  # todo: np.float16, np.float64
+                        is_img_dtype = (
+                            v.dtype in (bool, np.uint8, np.uint16)
+                            or v.dtype in (np.float32,)
+                            and np.min(v) >= 0
+                            and np.max(v) <= 1
+                        )  # todo: np.float16, np.float64
                         is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)
 
                         if is_img_dtype and is_img_shape:  # save as image
@@ -277,6 +283,7 @@ def set_logic(gui):
         gui.clear_button.setEnabled(gui.dataOK)
         gui.clear_key.setEnabled(gui.dataOK)
         gui.set_button.setEnabled(gui.set_dataOK)
+
     gui.encode = encode
 
     def decode():
@@ -291,8 +298,8 @@ def set_logic(gui):
             delattr(gui.con, "phase")
         if hasattr(gui.con, "residuals"):
             delattr(gui.con, "residuals")
-        if hasattr(gui.con, "order"):
-            delattr(gui.con, "order")
+        if hasattr(gui.con, "orders"):
+            delattr(gui.con, "orders")
         if hasattr(gui.con, "uncertainty"):
             delattr(gui.con, "uncertainty")
         if hasattr(gui.con, "exposure"):
@@ -331,6 +338,7 @@ def set_logic(gui):
         gui.curvature_button.setEnabled(gui.curvatureOK)
         gui.curvature_key.setEnabled(gui.curvatureOK)
         gui.set_button.setEnabled(gui.set_dataOK)
+
     gui.decode = decode
 
     def remap():
@@ -344,10 +352,10 @@ def set_logic(gui):
             x = gui.con.registration
             B = gui.con.modulation
             Bmin = 0
-            scale = 1
-            normalize = True
+            B[B < Bmin] = 0
+            mode = gui.fringes.mode  # todo
 
-            gui.con.source = gui.fringes.remap(x, B, Bmin, scale, normalize)
+            gui.con.source = gui.fringes.remap(x, B, mode=mode)
 
             gui.fringes.logger.info("Remapped.")
 
@@ -409,9 +417,13 @@ def set_logic(gui):
         if I is None or not isinstance(I, np.ndarray) or not I.size:
             gui.imv.clear()
         elif I.ndim < 2:
-            gui.fringes.logger.error("Can't display array with less than 2 dimensions.")  # todo: convert into videoshape
+            gui.fringes.logger.error(
+                "Can't display array with less than 2 dimensions."
+            )  # todo: convert into videoshape
         elif I.ndim > 4:
-            gui.fringes.logger.error("Can't display array with more than 4 dimensions.")  # todo: convert into videoshape
+            gui.fringes.logger.error(
+                "Can't display array with more than 4 dimensions."
+            )  # todo: convert into videoshape
         elif I.dtype.kind in "b":  # bool
             gui.imv.setImage(I, autoLevels=False, levels=(0, 1), autoHistogramRange=False)
             # gui.plot.setLimits(xMin=0, xMax=X, yMin=0, yMax=Y)
@@ -427,12 +439,12 @@ def set_logic(gui):
                 if Imax is not None:
                     Imax = int(Imax)
                 elif I.dtype.itemsize > 1:  # e.g. 16bit data may hold only 10bit or 12bit or 14bit information
-                    if np.any(I > 2 ** 10 - 1):  # 10-bit data
-                        Imax = 2 ** 10 - 1
-                    elif np.any(I > 2 ** 12 - 1):  # 12-bit data
-                        Imax = 2 ** 12 - 1
-                    elif np.any(I > 2 ** 14 - 1):  # 14-bit data
-                        Imax = 2 ** 14 - 1
+                    if np.any(I > 2**10 - 1):  # 10-bit data
+                        Imax = 2**10 - 1
+                    elif np.any(I > 2**12 - 1):  # 12-bit data
+                        Imax = 2**12 - 1
+                    elif np.any(I > 2**14 - 1):  # 14-bit data
+                        Imax = 2**14 - 1
                     else:
                         Imax = np.iinfo(I.dtype).max
                 else:
@@ -472,6 +484,7 @@ def set_logic(gui):
             gui.fringes.logger.error("Can't display array with dtype %s." % I.dtype)
 
         QtWidgets.QApplication.processEvents()  # refresh event queue
+
     gui.view = view
 
     def zoomback():
