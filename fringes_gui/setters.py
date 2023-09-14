@@ -174,10 +174,10 @@ def set_functionality(gui):
                 gui.fringes.N = np.maximum(gui.fringes._N, 3)
                 set_frequencies()
                 gui.params.param("set", "f").hide()
-                gui.params.param("set", "reverse").setValue(gui.fringes.defaults["reverse"])
-                gui.params.param("set", "reverse").hide()
-                gui.params.param("set", "o").setValue(gui.fringes.defaults["o"] / np.pi)
-                gui.params.param("set", "o").hide()
+                # gui.params.param("set", "reverse").setValue(gui.fringes.defaults["reverse"])
+                # gui.params.param("set", "reverse").hide()
+                # gui.params.param("set", "o").setValue(gui.fringes.defaults["o"] / np.pi)
+                # gui.params.param("set", "o").hide()
                 gui.params.param("set", "lmin").setValue(gui.fringes.defaults["lmin"])
                 gui.params.param("set", "lmin").hide()
                 gui.params.param("set", "vmax").hide()
@@ -219,8 +219,8 @@ def set_functionality(gui):
                 gui.fringes.N = np.maximum(gui.fringes._N, 2)
                 set_frequencies()
                 gui.params.param("set", "f").hide()
-                gui.params.param("set", "reverse").show()
-                gui.params.param("set", "o").show()
+                # gui.params.param("set", "reverse").show()
+                # gui.params.param("set", "o").show()
                 gui.params.param("set", "lmin").show()
                 gui.params.param("set", "vmax").hide()
                 gui.params.param("set", "lopt").hide()
@@ -265,8 +265,8 @@ def set_functionality(gui):
                     )
                 )
                 gui.params.param("set", "f").show()
-                gui.params.param("set", "reverse").show()
-                gui.params.param("set", "o").show()
+                # gui.params.param("set", "reverse").show()
+                # gui.params.param("set", "o").show()
                 gui.params.param("set", "lmin").show()
                 gui.params.param("set", "vmax").hide()
                 gui.params.param("set", "lopt").hide()
@@ -357,7 +357,9 @@ def set_functionality(gui):
 
             gui.params.param("sys", "D").setValue(gui.fringes.D)
 
-            gui.params.param("sys", "D", "axis").setValue(("X", "Y")[gui.fringes.axis])
+            gui.params.param("sys", "D", "indexing").setValue(gui.fringes.indexing)
+
+            gui.params.param("sys", "D", "axis").setValue(gui.fringes.axis)
             gui.params.param("sys", "D", "axis").show(gui.fringes.D == 1)
 
             gui.params.param("vid", "T").setValue(gui.fringes.T)
@@ -620,6 +622,13 @@ def set_functionality(gui):
         gui.encode_button.setStyleSheet("" if gui.encodeOK else "QPushButton{color: red}")
         gui.decode_button.setEnabled(gui.decodeOK)
         gui.decode_key.setEnabled(gui.decodeOK)
+        gui.remap_button.setEnabled(gui.remapOK)
+        gui.remap_key.setEnabled(gui.remapOK)
+        gui.curvature_button.setEnabled(gui.curvatureOK)
+        gui.curvature_key.setEnabled(gui.curvatureOK)
+        gui.height_button.setEnabled(gui.heightOK)
+        gui.height_key.setEnabled(gui.heightOK)
+
 
     gui.update_parameter_tree = update_parameter_tree
 

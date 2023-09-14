@@ -350,9 +350,12 @@ def set_logic(gui):
 
         with pg.BusyCursor():
             x = gui.con.registration
-            B = gui.con.modulation
-            Bmin = 0
-            B[B < Bmin] = 0
+            if hasattr(gui.con, "modulation"):
+                B = gui.con.modulation
+                Bmin = 0
+                B[B < Bmin] = 0
+            else:
+                B = None
             mode = gui.fringes.mode  # todo
 
             gui.con.source = gui.fringes.remap(x, B, mode=mode)

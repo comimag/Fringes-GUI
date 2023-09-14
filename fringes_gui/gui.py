@@ -363,7 +363,7 @@ class FringesGUI(QApplication):
     @property
     def remapOK(self):
         """Returns True if modulation and registration is available."""
-        return hasattr(self.con, "registration")  # hasattr(self.con, "modulation")
+        return hasattr(self.con, "registration")
 
     @property
     def curvatureOK(self):

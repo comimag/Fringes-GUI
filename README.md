@@ -25,7 +25,7 @@ fgui.run()
 
 Now the graphical user interface should appear:
 
-![Screenshot](https://raw.githubusercontent.com/comimag/fringes-gui/main/docs/GUI.png)\
+![Screenshot](https://raw.githubusercontent.com/comimag/fringes/main/docs/getting_started/GUI.png)\
 Screenshot of the GUI.
 
 ## Documentation
