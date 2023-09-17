@@ -44,7 +44,8 @@ image = {  # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3d
 binary = {
     ".mmap": np.load,
     ".npy": np.load,
-    # ".npz": np.load  # todo
+    ".npz": np.load,
+    # ".npz": functools.partial(np.load, allow_pickle=True),
     # ".asdf: asdf.open  # todo
 }
 
@@ -105,44 +106,56 @@ def set_logic(gui):
                     gui.fringes.load(flist[0][0])
                     gui.update_parameter_tree()
                 else:  # load data
-                    root = name.rstrip("1234567890").rstrip("_")
-
                     data = loader[ext](flist[0][0])
 
-                    if len(flist[0]) > 1:
-                        if ext not in image:
-                            gui.fringes.logger.error(
-                                "Selected multiple files which aren't images. " "Terminated loading data."
-                            )
-                            return
+                    if ext == ".npz":
+                        for key in data.files:
+                            try:
+                                datum = frng.vshape(data[key])
+                                setattr(gui.con, key, datum)
+                            except ValueError:
+                                pass  # Object arrays cannot be loaded when allow_pickle=False
 
-                        # data is only one datum in list of data
-                        datum = data
-                        data = np.empty((len(flist[0]),) + datum.shape, datum.dtype)
-                        data[0] = datum
-
-                        for i, f in enumerate(flist[0][1:]):
-                            path, base = os.path.split(f)
-                            name, ext_ = os.path.splitext(base)
-                            root_ = name.rstrip("1234567890").rstrip("_")
-
-                            if ext_ == ext and root_ == root:
-                                datum = loader[ext_](f)
-
-                                if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
-                                    data[i + 1] = datum
-                                else:
-                                    gui.fringes.logger.error("Files in list dint't match. " "Terminated loading data.")
-                                    return
-
-                        gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                        gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")  # only first npz-file is loaded
+                        view(getattr(gui.con, data.files[0]))
                     else:
-                        gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")
+                        root = name.rstrip("1234567890").rstrip("_")
 
-                    data = frng.vshape(data)
-                    setattr(gui.con, root, data)
+                        if len(flist[0]) > 1:
+                            if ext not in image:
+                                gui.fringes.logger.error(
+                                    "Selected multiple files which aren't images. " "Terminated loading data."
+                                )
+                                return
 
-                    view(getattr(gui.con, root))
+                            # data is only one datum in list of data
+                            datum = data
+                            data = np.empty((len(flist[0]),) + datum.shape, datum.dtype)
+                            data[0] = datum
+
+                            for i, f in enumerate(flist[0][1:]):
+                                path, base = os.path.split(f)
+                                name, ext_ = os.path.splitext(base)
+                                root_ = name.rstrip("1234567890").rstrip("_")
+
+                                if ext_ == ext and root_ == root:
+                                    datum = loader[ext_](f)
+
+                                    if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
+                                        data[i + 1] = datum
+                                    else:
+                                        gui.fringes.logger.error(
+                                            "Files in list dint't match. " "Terminated loading data.")
+                                        return
+
+                            gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                        else:
+                            gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")
+
+                        data = frng.vshape(data)
+                        setattr(gui.con, root, data)
+                        view(getattr(gui.con, root))
+
                     gui.data_table.setData(gui.con.info)
                     QtWidgets.QApplication.processEvents()  # refresh event queue
 
