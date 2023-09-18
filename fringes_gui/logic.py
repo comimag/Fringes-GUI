@@ -9,9 +9,8 @@ from PyQt6.QtWidgets import QFileDialog
 import pyqtgraph as pg
 import cv2
 import json
-import yaml
+import h5py
 import asdf
-import toml
 import fringes as frng
 
 
@@ -44,9 +43,11 @@ image = {  # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3d
 binary = {
     ".mmap": np.load,
     ".npy": np.load,
-    ".npz": np.load,
-    # ".npz": functools.partial(np.load, allow_pickle=True),
-    # ".asdf: asdf.open  # todo
+    ".npz": functools.partial(np.load, allow_pickle=False),
+    ".asdf": asdf.open,
+    ".hdf": h5py.File,
+    ".hdf5": h5py.File,
+    ".h5": h5py.File,
 }
 
 loader = {**config, **image, **binary}
@@ -94,21 +95,49 @@ def set_logic(gui):
             filter=f"All {tuple('*' + key for key in loader.keys())};;"
             f"Images {tuple('*' + key for key in image.keys())};;"
             f"Binary {tuple('*' + key for key in binary.keys())};;"
-            f"Config {tuple('*' + key for key in config.keys())}".replace(",", "").replace("'", ""),
-        )
+            f"Config {tuple('*' + key for key in config.keys())};;".replace(",", "").replace("'", ""),
+        )[0]
 
-        if flist[0]:
+        if flist:
             with pg.BusyCursor():
-                path, base = os.path.split(flist[0][0])
+                path, base = os.path.split(flist[0])
                 name, ext = os.path.splitext(base)
 
                 if ext in config.keys():  # load config
-                    gui.fringes.load(flist[0][0])
+                    gui.fringes.load(flist[0])
                     gui.update_parameter_tree()
                 else:  # load data
-                    data = loader[ext](flist[0][0])
+                    data = loader[ext](flist[0])
 
-                    if ext == ".npz":
+                    if ext in [".hdf", ".hdf5", ".h5"]:
+                        # todo: params
+
+                        key = ""
+                        for k, v in data.items():
+                            if hasattr(v, "shape") and hasattr(v, "dtype"):
+                                setattr(gui.con, k, np.array(v))
+                                if not key:
+                                    key = k
+
+                        if key:
+                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            view(getattr(gui.con, key))
+                    elif ext == ".asdf":
+                        if "fringes-params" in data:
+                            params = data["fringes-params"]
+                            gui.fringes.params = params
+
+                        key = ""
+                        for k, v in data.items():
+                            if isinstance(v, np.ndarray):
+                                setattr(gui.con, k, v)
+                                if not key:
+                                    key = k
+
+                        if key:
+                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            view(getattr(gui.con, key))
+                    elif ext == ".npz":
                         for key in data.files:
                             try:
                                 datum = frng.vshape(data[key])
@@ -116,41 +145,44 @@ def set_logic(gui):
                             except ValueError:
                                 pass  # Object arrays cannot be loaded when allow_pickle=False
 
-                        gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")  # only first npz-file is loaded
+                        gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first npz-file is loaded
                         view(getattr(gui.con, data.files[0]))
                     else:
                         root = name.rstrip("1234567890").rstrip("_")
 
-                        if len(flist[0]) > 1:
-                            if ext not in image:
-                                gui.fringes.logger.error(
-                                    "Selected multiple files which aren't images. " "Terminated loading data."
-                                )
-                                return
-
+                        if len(flist) > 1:
                             # data is only one datum in list of data
-                            datum = data
-                            data = np.empty((len(flist[0]),) + datum.shape, datum.dtype)
-                            data[0] = datum
+                            if all(os.path.splitext(f) == ".npy" for f in flist):
+                                for f in flist:
+                                    path, base = os.path.split(flist[0])
+                                    name, ext = os.path.splitext(base)
+                                    datum = np.load(f)
+                                    setattr(gui.con, name, datum)
+                                gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                            elif all(os.path.splitext(f) in image for f in flist):
+                                # here, data is only one image (one datum) in image stack (data)
+                                datum = data
+                                data = np.empty((len(flist),) + datum.shape, datum.dtype)
+                                data[0] = datum
 
-                            for i, f in enumerate(flist[0][1:]):
-                                path, base = os.path.split(f)
-                                name, ext_ = os.path.splitext(base)
-                                root_ = name.rstrip("1234567890").rstrip("_")
+                                for i, f in enumerate(flist[1:]):
+                                    path, base = os.path.split(f)
+                                    name, ext_ = os.path.splitext(base)
+                                    root_ = name.rstrip("1234567890").rstrip("_")
 
-                                if ext_ == ext and root_ == root:
-                                    datum = loader[ext_](f)
+                                    if ext_ == ext and root_ == root:
+                                        datum = loader[ext_](f)
 
-                                    if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
-                                        data[i + 1] = datum
-                                    else:
-                                        gui.fringes.logger.error(
-                                            "Files in list dint't match. " "Terminated loading data.")
-                                        return
+                                        if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
+                                            data[i + 1] = datum
+                                        else:
+                                            gui.fringes.logger.error(
+                                                "Files in list dint't match shape and dtype. " "Terminated loading data.")
+                                            return
 
-                            gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                                gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
                         else:
-                            gui.fringes.logger.info(f"Loaded data from '{flist[0][0]}'.")
+                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")
 
                         data = frng.vshape(data)
                         setattr(gui.con, root, data)
@@ -174,46 +206,85 @@ def set_logic(gui):
     def save():
         """Save all data to current directory."""
 
-        path = QFileDialog.getExistingDirectory(
-            caption="Select directory",
-            # directory=os.path.join(os.path.expanduser("~"), "Videos"),
-            # options=QFileDialog.Option.DontUseNativeDialog,
-        )
+        # path = QFileDialog.getExistingDirectory(
+        #     caption="Select directory",
+        #     # directory=os.path.join(os.path.expanduser("~"), "Videos"),
+        #     # options=QFileDialog.Option.DontUseNativeDialog,
+        # )
 
-        if os.path.isdir(os.path.abspath(path)):
+        fname = QFileDialog.getSaveFileName(
+            caption="Save dataset",
+            filter=f"Misc {tuple('*' + key for key in ['.tif', '.npy'])};;"
+                   f"Binary {tuple('*' + key for key in ['.npz', '.asdf'])};;"
+                   f"Config {tuple('*' + key for key in config.keys())};;".replace(",", "").replace("'", "")
+        )[0]
+
+        path, base = os.path.split(fname)
+        name, ext = os.path.splitext(base)
+
+        if os.path.isdir(path):
             with pg.BusyCursor():
-                gui.fringes.save(os.path.join(path, "params.yaml"))
+                if ext in config and (not gui.con or ext != ".asdf"):  # config can only be asdf if there is no data in gui.con
+                    gui.fringes.save(fname)
+                    gui.fringes.logger.info(f"Saved config to '{fname}'.")
+                elif ext == ".asdf":
+                    tree = {}
+                    tree["fringes-params"] = gui.fringes.params  # params first!
+                    for k, v in vars(gui.con).items():
+                        tree[k] = v
 
-                for k, v in gui.con.__dict__.items():
-                    if isinstance(v, np.ndarray) and v.size > 0:
-                        T, Y, X, C = v.shape = frng.vshape(v).shape
-                        color_order = (
-                            (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0
-                        )  # compensate OpenCV color order
-                        color_channels = (1, 3, 4)
-                        is_img_shape = v.ndim <= 2 or v.ndim == 3 and v.shape[-1] in color_channels
-                        is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
-                        is_img_dtype = (
-                            v.dtype in (bool, np.uint8, np.uint16)
-                            or v.dtype in (np.float32,)
-                            and np.min(v) >= 0
-                            and np.max(v) <= 1
-                        )  # todo: np.float16, np.float64
-                        is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)
+                    # Create the ASDF file object from our data tree
+                    af = asdf.AsdfFile(tree)
 
-                        if is_img_dtype and is_img_shape:  # save as image
-                            fname = os.path.join(path, f"{k}.tif")
-                            cv2.imwrite(fname, v[..., color_order])
-                        elif is_img_dtype and is_vid_shape:  # save as image sequence
-                            for t in range(T):
-                                fname = os.path.join(path, f"{k}_{str(t + 1).zfill(len(str(T)))}.tif")
-                                cv2.imwrite(fname, v[t][..., color_order])
-                        # elif is_exr_dtype:
-                        #     pass  # todo
-                        else:  # save as numpy array
-                            np.save(os.path.join(path, f"{k}.npy"), v)
-                else:  # executes only after the loop completes normally
-                    gui.fringes.logger.info(f"Saved data to '{path}'.")
+                    # Write the data to a new file
+                    af.write_to(fname)
+
+                    gui.fringes.logger.info(f"Saved data to '{fname}'.")
+                elif ext == ".npz":
+                    # todo: save params to json str to array of type str
+                    # s = json.dumps(gui.fringes.params)
+                    # a = np.array(s)
+                    # a2s = np.array2string(a)
+                    # s2 = json.loads(a2s)
+
+                    gui.fringes.save(os.path.join(path, "params.yaml"))
+
+                    tree = vars(gui.con)
+                    np.savez(fname, **tree)
+                else:  # choose file format disk space effiently
+                    gui.fringes.save(os.path.join(path, "params.yaml"))
+
+                    for k, v in gui.con.__dict__.items():
+                        if isinstance(v, np.ndarray) and v.size > 0:
+                            T, Y, X, C = v.shape = frng.vshape(v).shape
+                            color_order = (
+                                (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0
+                            )  # compensate OpenCV color order
+                            color_channels = (1, 3, 4)
+                            is_img_shape = v.ndim <= 2 or v.ndim == 3 and v.shape[-1] in color_channels
+                            is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
+                            is_img_dtype = (
+                                v.dtype in (bool, np.uint8, np.uint16)
+                                # or v.dtype in (np.float32,)  # here, OpenCV uses LogLuv high dynamic range encoding (4 bytes per pixel)
+                                # and np.min(v) >= 0
+                                # and np.max(v) <= 1
+                            )  # todo: np.float16, np.float64
+                            is_exr_shape = False  # todo: exr_shape
+                            is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)
+
+                            if is_img_dtype and is_img_shape:  # save as image
+                                fname = os.path.join(path, f"{k}.tif")
+                                cv2.imwrite(fname, v[..., color_order])
+                            elif is_img_dtype and is_vid_shape:  # save as image sequence
+                                for t in range(T):
+                                    fname = os.path.join(path, f"{k}_{str(t + 1).zfill(len(str(T)))}.tif")
+                                    cv2.imwrite(fname, v[t][..., color_order])
+                            # elif is_exr_dtype:
+                            #     pass  # todo
+                            else:  # save as numpy array
+                                np.save(os.path.join(path, f"{k}.npy"), v)
+                    else:  # executes only after the loop completes normally
+                        gui.fringes.logger.info(f"Saved data to '{path}'.")
 
     def clear():
         """Clear all data from the gui_util."""
