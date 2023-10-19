@@ -11,15 +11,15 @@ keywords = ["phase shifting", "fringe analysis", "fringe projection", "deflectom
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-#fringes = "^0.3.0,<0.3.1"
-fringes = {path = "../fringes", develop = true}
 pyqt6 = "^6.4.2"
 pyqtgraph = "^0.13.2"
 opencv-contrib-python = "^4.7.0"
 asdf = "^2.14.3"
 h5py = "^3.9.0"
-numpy = "1.24"
+numpy = "^1.26.1"
 toml = "^0.10.2"
+fringes = "^0.3.1"
+#fringes = {path = "../fringes", develop = true}
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.4.0"

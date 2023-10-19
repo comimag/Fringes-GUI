@@ -1,11 +1,12 @@
 import numpy as np
 import os
+import glob
 
 # os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import functools
 
-from pyqtgraph.Qt import QtWidgets
-from PyQt6.QtWidgets import QFileDialog
+from pyqtgraph.Qt import QtWidgets, QtGui
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 import pyqtgraph as pg
 import cv2
 import json
@@ -114,7 +115,7 @@ def set_logic(gui):
 
                         key = ""
                         for k, v in data.items():
-                            if hasattr(v, "shape") and hasattr(v, "dtype"):
+                            if hasattr(v, "shape") and hasattr(v, "shape"):
                                 setattr(gui.con, k, np.array(v))
                                 if not key:
                                     key = k
@@ -406,12 +407,21 @@ def set_logic(gui):
         elif hasattr(gui.con, "fringes"):
             I = gui.con.fringes
 
+        flist = glob.glob(os.path.join(os.path.dirname(frng.decoder.__file__), "__pycache__", "decoder*decode*.nbc"))
+        if max(os.path.getmtime(file) for file in flist) < os.path.getmtime(__file__):
+            dialog = QMessageBox()
+            dialog.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "numba-blue-icon-rgb.svg")))
+            dialog.setWindowTitle("Info")
+            dialog.setIcon(QMessageBox.Icon.Information)
+            dialog.setText("For the compitationally expensive decoding we make use of the just-in-time compiler Numba. During the first execution, an initial compilation is executed. This can take several tens of seconds up to single digit minutes, depending on your CPU. However, for any subsequent execution, the compiled code is cached and the code of the function runs much faster, approaching the speeds of code written in C.")
+            dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+            dialog.exec()
+
         with pg.BusyCursor():
             dec = gui.fringes.decode(I)
 
-            if dec is not None:
-                for k, v in dec._asdict().items():
-                    setattr(gui.con, k, v)
+            for k, v in dec._asdict().items():
+                setattr(gui.con, k, v)
 
             view(getattr(gui.con, "registration"))
         gui.data_table.setData(gui.con.info)

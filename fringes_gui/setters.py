@@ -106,8 +106,8 @@ def set_functionality(gui):
             if gui.decode_checkbox.isChecked() and gui.decodeOK:
                 gui.decode()
 
-            gui.data_table.setData(gui.con.info)
-            QtWidgets.QApplication.processEvents()  # refresh event queue
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
 
         if key == "vis":
             set_visibility(val)
