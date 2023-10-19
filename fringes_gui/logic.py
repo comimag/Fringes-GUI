@@ -408,7 +408,7 @@ def set_logic(gui):
             I = gui.con.fringes
 
         flist = glob.glob(os.path.join(os.path.dirname(frng.decoder.__file__), "__pycache__", "decoder*decode*.nbc"))
-        if max(os.path.getmtime(file) for file in flist) < os.path.getmtime(__file__):
+        if flist and max(os.path.getmtime(file) for file in flist) < os.path.getmtime(__file__):
             dialog = QMessageBox()
             dialog.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "numba-blue-icon-rgb.svg")))
             dialog.setWindowTitle("Info")
