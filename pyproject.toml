@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fringes-GUI"
-version = "0.3.1"
+version = "0.3.2"
 description = "Graphical user interface for the 'fringes' package."
 license = "CC-BY-NC-SA-4.0"
 authors = ["Christian Kludt"]
@@ -10,16 +10,16 @@ documentation = "https://fringes.readthedocs.io/en/latest/getting_started/usage.
 keywords = ["phase shifting", "fringe analysis", "fringe projection", "deflectometry", "computational imaging"]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
-#fringes = "^0.3.0,<0.3.1"
-fringes = {path = "../fringes", develop = true}
+python = "^3.10,<3.13"
 pyqt6 = "^6.4.2"
 pyqtgraph = "^0.13.2"
 opencv-contrib-python = "^4.7.0"
 asdf = "^2.14.3"
 h5py = "^3.9.0"
-numpy = "1.24"
+numpy = "^1.26.1"
 toml = "^0.10.2"
+fringes = "^0.3.1"
+#fringes = {path = "../fringes", develop = true}
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.4.0"
