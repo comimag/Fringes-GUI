@@ -3,6 +3,8 @@ import os
 
 import toml
 
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"  # https://github.com/opencv/opencv/issues/21326
+
 from .gui import FringesGUI
 
 try:  # PackageNotFoundError
