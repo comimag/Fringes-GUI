@@ -8,7 +8,7 @@ from .gui import FringesGUI
 
 logger = logging.getLogger(__name__)
 
-# use version string in pyproject.toml as the single source of truth
+# use verion string in pyproject.toml as the single source of truth
 try:
     # in order not to confuse an installed version of a package with a local one,
     # first try the local one (not being installed)
