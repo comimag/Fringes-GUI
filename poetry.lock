@@ -166,13 +166,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fringes"
-version = "1.1.0"
+version = "1.1.1"
 description = "Phase shifting algorithms for encoding and decoding sinusoidal fringe patterns."
 optional = false
 python-versions = "<3.13,>=3.9"
 files = [
-    {file = "fringes-1.1.0-py3-none-any.whl", hash = "sha256:d60ab9129b2c05bdc2cab710d0b5f21f7952d19cb729b9205f06d34354871351"},
-    {file = "fringes-1.1.0.tar.gz", hash = "sha256:f3c68207bc7e055d710e2d8ea14803f6560b94b4f39e212de2265c489deb332e"},
+    {file = "fringes-1.1.1-py3-none-any.whl", hash = "sha256:9b3d76b56712bbfe9bc1ab971e1ad88d93adc9f8308a2d3b63b8d3ac36b96d76"},
+    {file = "fringes-1.1.1.tar.gz", hash = "sha256:20334c86a8bacca66bc615c1e220a0247bbc6148c6c0cf75ed355199e1ae3264"},
 ]
 
 [package.dependencies]
@@ -972,4 +972,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "4514dec9cccbc85f708f38b440dc956e916f3827de4074338734590eeb2eb86a"
+content-hash = "c4d358515e4448a9cc7dda34f8d106cc94ae94ddd269a44eba79003f1cbd2926"
