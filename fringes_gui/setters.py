@@ -1,12 +1,16 @@
+import logging
 import os
 from collections import deque
 
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtWidgets
+import fringes as frng
 
 from .params import set_params
 from .logic import set_logic
+
+logger = logging.getLogger(__name__)
 
 
 def set_functionality(gui):
@@ -50,7 +54,20 @@ def set_functionality(gui):
             if hasattr(gui.con, "coordinates"):
                 delattr(gui.con, "coordinates")
 
-        if key not in ["mode", "Vmin", "verbose"] or key == "axis" and gui.fringes.D == 2:
+        if key in ["mode"]:
+            if hasattr(gui.con, "source"):
+                delattr(gui.con, "source")
+
+            if hasattr(gui.con, "bright_inverse"):
+                delattr(gui.con, "bright_inverse")
+
+            if hasattr(gui.con, "bright"):
+                delattr(gui.con, "bright")
+
+            if hasattr(gui.con, "dark"):
+                delattr(gui.con, "dark")
+
+        if key not in ["mode", "verbose"] or key == "axis" and gui.fringes.D == 2:
             if hasattr(gui.con, "fringes"):
                 delattr(gui.con, "fringes")
 
@@ -111,12 +128,15 @@ def set_functionality(gui):
 
         if key == "vis":
             set_visibility(val)
-            gui.fringes.logger.debug(f"Set visibility to {gui.visibility}.")
+            # gui.glogger.debug(f"Set visibility to {gui.visibility}.")
+            logger.debug(f"Set visibility to {gui.visibility}.")
             gui.reset_button.setEnabled(gui.resetOK)
             return
         elif key == "log":
-            gui.fringes.logger.setLevel(val)
-            gui.fringes.logger.debug(f"Set logging level to '{val}'.")
+            gui.glogger.setLevel(val)
+            gui.flogger.setLevel(val)
+            # gui.glogger.debug(f"Set logging level to '{val}'.")
+            logger.debug(f"Set logging level to '{val}'.")
             return
 
         if key[0] in "Nlvfh" and (key[-1] == "ᵢ" or key[-1].translate(gui.sup).isdigit()) and 2 <= len(key) <= 4:
@@ -150,7 +170,7 @@ def set_functionality(gui):
                 val_old[:, k] = val
 
             val = val_old
-        elif key == "o":
+        elif key == "p0":
             val *= np.pi
 
         setattr(gui.fringes, key, val)
@@ -176,8 +196,8 @@ def set_functionality(gui):
                 gui.params.param("set", "f").hide()
                 # gui.params.param("set", "reverse").setValue(gui.fringes.defaults["reverse"])
                 # gui.params.param("set", "reverse").hide()
-                # gui.params.param("set", "o").setValue(gui.fringes.defaults["o"] / np.pi)
-                # gui.params.param("set", "o").hide()
+                # gui.params.param("set", "p0").setValue(gui.fringes.defaults["p0"] / np.pi)
+                # gui.params.param("set", "p0").hide()
                 gui.params.param("set", "lmin").setValue(gui.fringes.defaults["lmin"])
                 gui.params.param("set", "lmin").hide()
                 gui.params.param("set", "vmax").hide()
@@ -220,7 +240,7 @@ def set_functionality(gui):
                 set_frequencies()
                 gui.params.param("set", "f").hide()
                 # gui.params.param("set", "reverse").show()
-                # gui.params.param("set", "o").show()
+                # gui.params.param("set", "p0").show()
                 gui.params.param("set", "lmin").show()
                 gui.params.param("set", "vmax").hide()
                 gui.params.param("set", "lopt").hide()
@@ -266,7 +286,7 @@ def set_functionality(gui):
                 )
                 gui.params.param("set", "f").show()
                 # gui.params.param("set", "reverse").show()
-                # gui.params.param("set", "o").show()
+                # gui.params.param("set", "p0").show()
                 gui.params.param("set", "lmin").show()
                 gui.params.param("set", "vmax").hide()
                 gui.params.param("set", "lopt").hide()
@@ -400,17 +420,17 @@ def set_functionality(gui):
                                         "name": "N" + "ᵢ",
                                         "type": "int",
                                         "value": gui.fringes._N[d, k],
-                                        "default": gui.fringes._Nmin
-                                        if gui.fringes.FDM
-                                        else gui.fringes.defaults["N"][0, 0],
+                                        "default": (
+                                            gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0]
+                                        ),
                                         "limits": (
                                             max(
                                                 gui.fringes._Nmin,
-                                                1
-                                                if gui.visibility == "Guru"
-                                                else 2
-                                                if gui.visibility == "Expert"
-                                                else 3,
+                                                (
+                                                    1
+                                                    if gui.visibility == "Guru"
+                                                    else 2 if gui.visibility == "Expert" else 3
+                                                ),
                                             ),
                                             gui.fringes._Nmax,
                                         ),
@@ -423,7 +443,9 @@ def set_functionality(gui):
                                     "name": "N" + id,
                                     "type": "int",
                                     "value": gui.fringes._N[d, k],
-                                    "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
+                                    "default": (
+                                        gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0]
+                                    ),
                                     "limits": (
                                         max(
                                             gui.fringes._Nmin,
@@ -466,11 +488,11 @@ def set_functionality(gui):
                                 "name": "f" + id,
                                 "type": "float",
                                 "value": gui.fringes._f[d, k],
-                                "default": gui.fringes._f[d, k]
-                                if gui.fringes.FDM and gui.fringes.static
-                                else gui.fringes.D * k + k
-                                if gui.fringes.FDM
-                                else 1,
+                                "default": (
+                                    gui.fringes._f[d, k]
+                                    if gui.fringes.FDM and gui.fringes.static
+                                    else gui.fringes.D * k + k if gui.fringes.FDM else 1
+                                ),
                                 "limits": (-gui.fringes.vmax, gui.fringes.vmax),
                                 "decimals": gui.digits,
                                 "readonly": gui.fringes.FDM and gui.fringes.static,
@@ -521,7 +543,7 @@ def set_functionality(gui):
 
             gui.params.param("set", "reverse").setValue(gui.fringes.reverse)
 
-            gui.params.param("set", "o").setValue(gui.fringes.o / np.pi)
+            gui.params.param("set", "p0").setValue(gui.fringes.p0 / np.pi)
 
             gui.params.param("set", "lmin").setValue(gui.fringes.lmin)
 
@@ -619,16 +641,15 @@ def set_functionality(gui):
             gui.params.param("quali", "DR").setValue(gui.fringes.DRdB.max())
 
         gui.reset_button.setEnabled(gui.resetOK)
-        gui.encode_button.setStyleSheet("" if gui.encodeOK else "QPushButton{color: red}")
+        gui.encode_button.setStyleSheet("" if not gui.fringes._ambiguous else "QPushButton{color: red}")
         gui.decode_button.setEnabled(gui.decodeOK)
         gui.decode_key.setEnabled(gui.decodeOK)
-        gui.remap_button.setEnabled(gui.remapOK)
-        gui.remap_key.setEnabled(gui.remapOK)
+        gui.source_button.setEnabled(gui.sourceOK)
+        gui.source_key.setEnabled(gui.sourceOK)
         gui.curvature_button.setEnabled(gui.curvatureOK)
         gui.curvature_key.setEnabled(gui.curvatureOK)
         gui.height_button.setEnabled(gui.heightOK)
         gui.height_key.setEnabled(gui.heightOK)
-
 
     gui.update_parameter_tree = update_parameter_tree
 

@@ -1,6 +1,8 @@
-import logging as lg
+import logging
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def set_params(gui):
@@ -24,7 +26,7 @@ def set_params(gui):
         f"and easy to use.\n"
         f"\u2B9A Expert: Features that require a more in-depth knowledge of the system "
         f"functionality. This is the preferred visibility level for all advanced features.\n"
-        f"\u2B9A Guru: - Guru: Advanced features that usually only people"
+        f"\u2B9A Guru: - Guru: Advanced features that usually only people "
         f"with a sound background in phase shifting can make good use of.\n"
         f"\u2B9A Experimental: New features that have not been tested yet "
         f"and the system might probably crash at some point.",
@@ -33,8 +35,8 @@ def set_params(gui):
         "title": "Logging",
         "name": "log",
         "type": "list",
-        "value": lg.getLevelName(gui.fringes.logger.level),
-        "default": lg.getLevelName(gui.fringes.logger.level),
+        "value": logging.getLevelName(gui.glogger.level),
+        "default": logging.getLevelName(gui.glogger.level),
         "limits": ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"),
         "tip": "Logging level.",
     }
@@ -194,111 +196,117 @@ def set_params(gui):
                 "name": "N",
                 "type": "action",
                 "tip": "Reset values to defaults.",
-                "children": [
-                    {
-                        "name": "N" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
-                        "type": "int",
-                        "value": gui.fringes._N[d, k],
-                        "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
-                        "limits": (
-                            max(
-                                gui.fringes._Nmin,
-                                1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                "children": (
+                    [
+                        {
+                            "name": "N" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
+                            "type": "int",
+                            "value": gui.fringes._N[d, k],
+                            "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
+                            "limits": (
+                                max(
+                                    gui.fringes._Nmin,
+                                    3,  # 1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                                ),
+                                gui.fringes._Nmax,
                             ),
-                            gui.fringes._Nmax,
-                        ),
-                        "tip": gui.fringes.__class__.N.__doc__,
-                    }
-                    for d in range(gui.fringes.D)
-                    for k in range(gui.fringes.K)
-                ]
-                if gui.visibility == "Guru" or gui.fringes.N.ndim > 1
-                else [  # todo: FDM: N_i
-                    {
-                        "name": "N" + str(k).translate(gui.sub),
-                        "type": "int",
-                        "value": gui.fringes.N[k],
-                        "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
-                        "limits": (
-                            max(
-                                gui.fringes._Nmin,
-                                1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                            "tip": gui.fringes.__class__.N.__doc__,
+                        }
+                        for d in range(gui.fringes.D)
+                        for k in range(gui.fringes.K)
+                    ]
+                    if gui.visibility == "Guru" or gui.fringes.N.ndim > 1
+                    else [  # todo: FDM: N_i
+                        {
+                            "name": "N" + str(k).translate(gui.sub),
+                            "type": "int",
+                            "value": gui.fringes.N[k],
+                            "default": gui.fringes._Nmin if gui.fringes.FDM else gui.fringes.defaults["N"][0, 0],
+                            "limits": (
+                                max(
+                                    gui.fringes._Nmin,
+                                    1 if gui.visibility == "Guru" else 2 if gui.visibility == "Expert" else 3,
+                                ),
+                                gui.fringes._Nmax,
                             ),
-                            gui.fringes._Nmax,
-                        ),
-                        "tip": gui.fringes.__class__.N.__doc__,
-                    }
-                    for k in range(gui.fringes.K)
-                ],
+                            "tip": gui.fringes.__class__.N.__doc__,
+                        }
+                        for k in range(gui.fringes.K)
+                    ]
+                ),
             },
             {
                 "title": "Wavelengths",
                 "name": "l",
                 "type": "action",
                 "tip": "Set optimal wavelengths automatically.",
-                "children": [
-                    {
-                        "title": "\u03BB" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
-                        "name": "l" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes._l[d, k],
-                        "default": None,  # gui.fringes.L ** (1 / (k + 1)),
-                        "limits": (gui.fringes.lmin, None),
-                        "decimals": gui.digits,
-                        "tip": gui.fringes.__class__.l.__doc__,
-                    }
-                    for d in range(gui.fringes.D)
-                    for k in range(gui.fringes.K)
-                ]
-                if gui.visibility == "Guru" or gui.fringes.l.ndim > 1
-                else [
-                    {
-                        "title": "\u03BB" + str(k).translate(gui.sub),
-                        "name": "l" + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes.l[k],
-                        "default": None,  # gui.fringes.L ** (1 / (k + 1)),
-                        "suffix": " px",
-                        "limits": (gui.fringes.lmin, None),
-                        "decimals": gui.digits,
-                        "tip": gui.fringes.__class__.l.__doc__,
-                    }
-                    for k in range(gui.fringes.K)
-                ],
+                "children": (
+                    [
+                        {
+                            "title": "\u03BB" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "l" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes._l[d, k],
+                            "default": None,  # gui.fringes.L ** (1 / (k + 1)),
+                            "limits": (gui.fringes.lmin, None),
+                            "decimals": gui.digits,
+                            "tip": gui.fringes.__class__.l.__doc__,
+                        }
+                        for d in range(gui.fringes.D)
+                        for k in range(gui.fringes.K)
+                    ]
+                    if gui.visibility == "Guru" or gui.fringes.l.ndim > 1
+                    else [
+                        {
+                            "title": "\u03BB" + str(k).translate(gui.sub),
+                            "name": "l" + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes.l[k],
+                            "default": None,  # gui.fringes.L ** (1 / (k + 1)),
+                            "suffix": " px",
+                            "limits": (gui.fringes.lmin, None),
+                            "decimals": gui.digits,
+                            "tip": gui.fringes.__class__.l.__doc__,
+                        }
+                        for k in range(gui.fringes.K)
+                    ]
+                ),
             },
             {
                 "title": "Periods",
                 "name": "v",
                 "type": "action",
                 "tip": "Set optimal periods automatically.",
-                "children": [
-                    {
-                        "title": "\u03BD" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
-                        "name": "v" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes._v[d, k],
-                        "default": None,  # gui.fringes.L ** (1 - 1 / (k + 1)),
-                        "limits": (0, gui.fringes.vmax),
-                        "decimals": gui.digits,
-                        "tip": gui.fringes.__class__.v.__doc__,
-                    }
-                    for d in range(gui.fringes.D)
-                    for k in range(gui.fringes.K)
-                ]
-                if gui.visibility == "Guru" or gui.fringes.v.ndim > 1
-                else [
-                    {
-                        "title": "\u03BD" + str(k).translate(gui.sub),
-                        "name": "v" + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes.v[k],
-                        "default": None,  # gui.fringes.L ** (1 - 1 / (k + 1)),
-                        "limits": (0, gui.fringes.vmax),
-                        "decimals": gui.digits,
-                        "tip": gui.fringes.__class__.v.__doc__,
-                    }
-                    for k in range(gui.fringes.K)
-                ],
+                "children": (
+                    [
+                        {
+                            "title": "\u03BD" + str(d).translate(gui.sub) + ", " + str(k).translate(gui.sub),
+                            "name": "v" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes._v[d, k],
+                            "default": None,  # gui.fringes.L ** (1 - 1 / (k + 1)),
+                            "limits": (0, gui.fringes.vmax),
+                            "decimals": gui.digits,
+                            "tip": gui.fringes.__class__.v.__doc__,
+                        }
+                        for d in range(gui.fringes.D)
+                        for k in range(gui.fringes.K)
+                    ]
+                    if gui.visibility == "Guru" or gui.fringes.v.ndim > 1
+                    else [
+                        {
+                            "title": "\u03BD" + str(k).translate(gui.sub),
+                            "name": "v" + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes.v[k],
+                            "default": None,  # gui.fringes.L ** (1 - 1 / (k + 1)),
+                            "limits": (0, gui.fringes.vmax),
+                            "decimals": gui.digits,
+                            "tip": gui.fringes.__class__.v.__doc__,
+                        }
+                        for k in range(gui.fringes.K)
+                    ]
+                ),
             },
             {
                 "title": "Frequencies",
@@ -306,33 +314,35 @@ def set_params(gui):
                 "type": "action",
                 "visible": gui.visibility == "Guru",
                 "tip": "Reset values to defaults.",
-                "children": [
-                    {
-                        "name": "f" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes._f[d, k],
-                        "default": None if gui.fringes.FDM else 1,
-                        "limits": (-gui.fringes._fmax, gui.fringes._fmax),
-                        "decimals": gui.digits,
-                        "readonly": gui.fringes.FDM and gui.fringes.static,
-                        "tip": gui.fringes.__class__.f.__doc__,
-                    }
-                    for d in range(gui.fringes.D)
-                    for k in range(gui.fringes.K)
-                ]
-                if gui.visibility == "Guru" or gui.fringes.FDM or gui.fringes.f.ndim > 1
-                else [
-                    {
-                        "name": "f" + str(k).translate(gui.sub),
-                        "type": "float",
-                        "value": gui.fringes.f[k],
-                        "default": 1,
-                        "limits": (-gui.fringes._fmax, gui.fringes._fmax),
-                        "decimals": gui.digits,
-                        "tip": gui.fringes.__class__.f.__doc__,
-                    }
-                    for k in range(gui.fringes.K)
-                ],
+                "children": (
+                    [
+                        {
+                            "name": "f" + str(d).translate(gui.sub) + "," + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes._f[d, k],
+                            "default": None if gui.fringes.FDM else 1,
+                            "limits": (-gui.fringes._fmax, gui.fringes._fmax),
+                            "decimals": gui.digits,
+                            "readonly": gui.fringes.FDM and gui.fringes.static,
+                            "tip": gui.fringes.__class__.f.__doc__,
+                        }
+                        for d in range(gui.fringes.D)
+                        for k in range(gui.fringes.K)
+                    ]
+                    if gui.visibility == "Guru" or gui.fringes.FDM or gui.fringes.f.ndim > 1
+                    else [
+                        {
+                            "name": "f" + str(k).translate(gui.sub),
+                            "type": "float",
+                            "value": gui.fringes.f[k],
+                            "default": 1,
+                            "limits": (-gui.fringes._fmax, gui.fringes._fmax),
+                            "decimals": gui.digits,
+                            "tip": gui.fringes.__class__.f.__doc__,
+                        }
+                        for k in range(gui.fringes.K)
+                    ]
+                ),
             },
             {
                 "title": "Reverse",
@@ -344,15 +354,15 @@ def set_params(gui):
             },
             {
                 "title": "Offset",
-                "name": "o",
+                "name": "p0",
                 "type": "float",
-                "value": gui.fringes.o / np.pi,
-                "default": gui.fringes.defaults["o"] / np.pi,
+                "value": gui.fringes.p0 / np.pi,
+                "default": gui.fringes.defaults["p0"] / np.pi,
                 "limits": (-2, 2),
                 "step": 0.5,
                 "decimals": gui.digits,
                 "suffix": "\U0001D745",  # \U0001D70B
-                "tip": gui.fringes.__class__.o.__doc__,
+                "tip": gui.fringes.__class__.p0.__doc__,
             },
             {
                 "title": "\u03BB\u2098\u1D62\u2099",
@@ -484,7 +494,7 @@ def set_params(gui):
                 "type": "float",
                 "value": gui.fringes.gamma,
                 "default": gui.fringes.defaults["gamma"],
-                "limits": (0, gui.fringes.__class__._gammamax),
+                "limits": (0.1, gui.fringes.__class__._gammamax),  # todo: gammamin
                 "step": 0.1,
                 "decimals": gui.digits,
                 "tip": gui.fringes.__class__.gamma.__doc__,

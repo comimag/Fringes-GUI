@@ -1,19 +1,22 @@
-import numpy as np
-import os
-import glob
-
-# os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
+import logging
 import functools
+import os
+
+# os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"  # todo: exr, in put this line in __init__?
+import glob
+import ast
+
+import numpy as np
 
 from pyqtgraph.Qt import QtWidgets, QtGui
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 import pyqtgraph as pg
 import cv2
-import json
 import h5py
 import asdf
 import fringes as frng
 
+logger = logging.getLogger(__name__)
 
 config = frng.Fringes._loader
 
@@ -36,7 +39,7 @@ image = {  # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3d
     # ".ras": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     ".tiff": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     ".tif": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
-    # ".exr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
+    # ".exr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),  # todo exr
     # ".hdr": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
     # ".pic": functools.partial(cv2.imread, flags=cv2.IMREAD_UNCHANGED),
 }
@@ -81,7 +84,6 @@ def set_logic(gui):
             gui.fringes.reset()
             gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
             gui.update_parameter_tree()
-            # gui.params.param("log").setValue("INFO")  # should be the same as in gui.py
 
         clear()
         gui.reset_button.setEnabled(gui.resetOK)
@@ -121,12 +123,14 @@ def set_logic(gui):
                                     key = k
 
                         if key:
-                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            # gui.glogger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
                             view(getattr(gui.con, key))
                     elif ext == ".asdf":
                         if "fringes-params" in data:
                             params = data["fringes-params"]
                             gui.fringes.params = params
+                            gui.update_parameter_tree()
 
                         key = ""
                         for k, v in data.items():
@@ -136,18 +140,30 @@ def set_logic(gui):
                                     key = k
 
                         if key:
-                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            # gui.glogger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
+                            logger.info(f"Loaded data from '{flist[0]}'.")  # only first asdf-file is loaded
                             view(getattr(gui.con, key))
                     elif ext == ".npz":
-                        for key in data.files:
-                            try:
-                                datum = frng.vshape(data[key])
-                                setattr(gui.con, key, datum)
-                            except ValueError:
-                                pass  # Object arrays cannot be loaded when allow_pickle=False
+                        if "fringes-params" in data:
+                            params = ast.literal_eval(np.array2string(data["fringes-params"])[1:-1])
+                            gui.fringes.params = params
+                            gui.update_parameter_tree()
 
-                        gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")  # only first npz-file is loaded
-                        view(getattr(gui.con, data.files[0]))
+                        key = ""
+                        for k, v in data.items():
+                            if isinstance(v, np.ndarray) and k != "fringes-params":  # and v.dtype.kind != "U":
+                                try:
+                                    setattr(gui.con, k, v)
+                                    if not key:
+                                        key = k
+                                except ValueError:
+                                    # gui.glogger.error("Object arrays cannot be loaded when allow_pickle=False")
+                                    logger.error("Object arrays cannot be loaded when allow_pickle=False")
+
+                        if key:
+                            # gui.glogger.info(f"Loaded data from '{flist[0]}'.")  # only first npz-file is loaded
+                            logger.info(f"Loaded data from '{flist[0]}'.")  # only first npz-file is loaded
+                            view(getattr(gui.con, key))
                     else:
                         root = name.rstrip("1234567890").rstrip("_")
 
@@ -159,8 +175,9 @@ def set_logic(gui):
                                     name, ext = os.path.splitext(base)
                                     datum = np.load(f)
                                     setattr(gui.con, name, datum)
-                                gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
-                            elif all(os.path.splitext(f) in image for f in flist):
+                                # gui.glogger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                                logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                            elif all(os.path.splitext(f)[1] in image for f in flist):
                                 # here, data is only one image (one datum) in image stack (data)
                                 datum = data
                                 data = np.empty((len(flist),) + datum.shape, datum.dtype)
@@ -177,13 +194,21 @@ def set_logic(gui):
                                         if datum.shape == data.shape[1:] and datum.dtype == data.dtype:
                                             data[i + 1] = datum
                                         else:
-                                            gui.fringes.logger.error(
-                                                "Files in list dint't match shape and dtype. " "Terminated loading data.")
+                                            # gui.glogger.error(
+                                            #     "Files in list dint't match shape and dtype. "
+                                            #     "Terminated loading data."
+                                            # )
+                                            logger.error(
+                                                "Files in list dint't match shape and dtype. "
+                                                "Terminated loading data."
+                                            )
                                             return
 
-                                gui.fringes.logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                                # gui.glogger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
+                                logger.info(f"Loaded data from '{os.path.join(path, root + '*') + ext}'.")
                         else:
-                            gui.fringes.logger.info(f"Loaded data from '{flist[0]}'.")
+                            # gui.glogger.info(f"Loaded data from '{flist[0]}'.")
+                            logger.info(f"Loaded data from '{flist[0]}'.")
 
                         data = frng.vshape(data)
                         setattr(gui.con, root, data)
@@ -194,8 +219,8 @@ def set_logic(gui):
 
             gui.decode_button.setEnabled(gui.decodeOK)
             gui.decode_key.setEnabled(gui.decodeOK)
-            gui.remap_button.setEnabled(gui.remapOK)
-            gui.remap_key.setEnabled(gui.remapOK)
+            gui.source_button.setEnabled(gui.sourceOK)
+            gui.source_key.setEnabled(gui.sourceOK)
             gui.curvature_button.setEnabled(gui.curvatureOK)
             gui.curvature_key.setEnabled(gui.curvatureOK)
             gui.height_button.setEnabled(gui.heightOK)
@@ -207,6 +232,8 @@ def set_logic(gui):
     def save():
         """Save all data to current directory."""
 
+        # todo: used flag (mixed) to decide wheather to save as binary or multiple files i.e. memory efficient i.e. compressed
+
         # path = QFileDialog.getExistingDirectory(
         #     caption="Select directory",
         #     # directory=os.path.join(os.path.expanduser("~"), "Videos"),
@@ -216,21 +243,21 @@ def set_logic(gui):
         fname = QFileDialog.getSaveFileName(
             caption="Save dataset",
             filter=f"Misc {tuple('*' + key for key in ['.tif', '.npy'])};;"
-                   f"Binary {tuple('*' + key for key in ['.npz', '.asdf'])};;"
-                   f"Config {tuple('*' + key for key in config.keys())};;".replace(",", "").replace("'", "")
+            f"Binary {tuple('*' + key for key in ['.npz', '.asdf'])};;"
+            f"Config {tuple('*' + key for key in config.keys())};;".replace(",", "").replace("'", ""),
         )[0]
 
         path, base = os.path.split(fname)
         name, ext = os.path.splitext(base)
+        if not ext:
+            name, ext = ext, name
 
         if os.path.isdir(path):
             with pg.BusyCursor():
-                if ext in config and (not gui.con or ext != ".asdf"):  # config can only be asdf if there is no data in gui.con
+                if ext in config:
                     gui.fringes.save(fname)
-                    gui.fringes.logger.info(f"Saved config to '{fname}'.")
                 elif ext == ".asdf":
-                    tree = {}
-                    tree["fringes-params"] = gui.fringes.params  # params first!
+                    tree = {"fringes-params": gui.fringes.params}
                     for k, v in vars(gui.con).items():
                         tree[k] = v
 
@@ -240,42 +267,54 @@ def set_logic(gui):
                     # Write the data to a new file
                     af.write_to(fname)
 
-                    gui.fringes.logger.info(f"Saved data to '{fname}'.")
+                    # gui.glogger.info(f"Saved data to '{fname}'.")
+                    logger.info(f"Saved data to '{fname}'.")
                 elif ext == ".npz":
-                    # todo: save params to json str to array of type str
-                    # s = json.dumps(gui.fringes.params)
-                    # a = np.array(s)
-                    # a2s = np.array2string(a)
-                    # s2 = json.loads(a2s)
-
-                    gui.fringes.save(os.path.join(path, "params.yaml"))
-
-                    tree = vars(gui.con)
+                    params = {"fringes-params": np.array(str(gui.fringes.params))}
+                    data = vars(gui.con)
+                    tree = params | data
                     np.savez(fname, **tree)
-                else:  # choose file format disk space effiently
+                else:  # choose file format so that disk space is used effiently
                     gui.fringes.save(os.path.join(path, "params.yaml"))
 
                     for k, v in gui.con.__dict__.items():
                         if isinstance(v, np.ndarray) and v.size > 0:
-                            T, Y, X, C = v.shape = frng.vshape(v).shape
-                            color_order = (
-                                (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0
-                            )  # compensate OpenCV color order
+                            T, Y, X, C = frng.vshape(v).shape
+
                             color_channels = (1, 3, 4)
-                            is_img_shape = v.ndim <= 2 or v.ndim == 3 and v.shape[-1] in color_channels
-                            is_vid_shape = v.ndim == 3 or v.ndim == 4 and v.shape[-1] in color_channels
+
+                            # is_txt_shape = X == Y == 1  # todo: txt file
+
+                            # limits of imread() in OpenCV
+                            # https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#gab32ee19e22660912565f8140d0f675a8
+                            is_img_shape = (
+                                T == 1 and X <= 2**20 and Y <= 2**20 and X * Y <= 2**30 and C in color_channels
+                            )
+
+                            # max luma picture size of h264, h265, h266 video codecs as of 2022
+                            is_vid_shape = T > 1 and X * Y <= 35651584 and C in color_channels
+
                             is_img_dtype = (
-                                v.dtype in (bool, np.uint8, np.uint16)
+                                v.dtype
+                                in (bool, np.uint8, np.uint16)
                                 # or v.dtype in (np.float32,)  # here, OpenCV uses LogLuv high dynamic range encoding (4 bytes per pixel)
                                 # and np.min(v) >= 0
                                 # and np.max(v) <= 1
                             )  # todo: np.float16, np.float64
-                            is_exr_shape = False  # todo: exr_shape
-                            is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)
+
+                            # is_exr_dtype = v.dtype in (np.float16, np.float32, np.uint32)  # todo: exr
+
+                            v.shape = T, Y, X, C
+
+                            # is_img_shape = v.ndim <= 2 or v.ndim == 3 and C in color_channels
+                            # is_vid_shape = v.ndim == 3 or v.ndim == 4 and C in color_channels
+
+                            # compensate OpenCV color order
+                            color_order = (2, 1, 0, 3) if C == 4 else (2, 1, 0) if C == 3 else 0
 
                             if is_img_dtype and is_img_shape:  # save as image
                                 fname = os.path.join(path, f"{k}.tif")
-                                cv2.imwrite(fname, v[..., color_order])
+                                cv2.imwrite(fname, v[0, ..., color_order])
                             elif is_img_dtype and is_vid_shape:  # save as image sequence
                                 for t in range(T):
                                     fname = os.path.join(path, f"{k}_{str(t + 1).zfill(len(str(T)))}.tif")
@@ -285,7 +324,8 @@ def set_logic(gui):
                             else:  # save as numpy array
                                 np.save(os.path.join(path, f"{k}.npy"), v)
                     else:  # executes only after the loop completes normally
-                        gui.fringes.logger.info(f"Saved data to '{path}'.")
+                        # gui.glogger.info(f"Saved data to '{path}'.")
+                        logger.info(f"Saved data to '{path}'.")
 
     def clear():
         """Clear all data from the gui_util."""
@@ -305,8 +345,8 @@ def set_logic(gui):
 
         gui.decode_button.setEnabled(False)
         gui.decode_key.setEnabled(False)
-        gui.remap_button.setEnabled(False)
-        gui.remap_key.setEnabled(False)
+        gui.source_button.setEnabled(False)
+        gui.source_key.setEnabled(False)
         gui.curvature_button.setEnabled(False)
         gui.curvature_key.setEnabled(False)
         gui.height_button.setEnabled(False)
@@ -323,7 +363,8 @@ def set_logic(gui):
             if hasattr(gui.con, item):
                 view(getattr(gui.con, item))
                 gui.key = item
-                gui.fringes.logger.info(f"Set data to be decoded to '{gui.key}'.")
+                # gui.glogger.info(f"Set data to be decoded to '{gui.key}'.")
+                logger.info(f"Set data to be decoded to '{gui.key}'.")
             else:
                 view(None)
                 gui.key = None
@@ -338,30 +379,33 @@ def set_logic(gui):
         if hasattr(gui.con, "coordinates"):
             delattr(gui.con, "coordinates")
 
+        view(None)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
         with pg.BusyCursor():
             gui.con.coordinates = gui.fringes.coordinates()
 
-        view(getattr(gui.con, "coordinates").astype(float))
+        view(gui.con.coordinates.astype(float))
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
-    def encode():
+    def encode(*args, display: bool = True):
         """Encode fringes based on the given parameters."""
         if hasattr(gui.con, "fringes"):
             delattr(gui.con, "fringes")
 
+        view(None)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
         with pg.BusyCursor():
             gui.con.fringes = gui.fringes.encode()
 
-        view(getattr(gui.con, "fringes"))
-        gui.data_table.setData(gui.con.info)
-        QtWidgets.QApplication.processEvents()  # refresh event queue
+        if display:
+            view(gui.con.fringes)
+            gui.data_table.setData(gui.con.info)
+            QtWidgets.QApplication.processEvents()  # refresh event queue
 
         gui.decode_button.setEnabled(gui.decodeOK)
         gui.decode_key.setEnabled(gui.decodeOK)
@@ -373,6 +417,32 @@ def set_logic(gui):
 
     def decode():
         """Decode encoded or acquired fringes."""
+
+        flist = glob.glob(os.path.join(os.path.dirname(frng.decoder.__file__), "__pycache__", "decoder*decode*.nbc"))
+        if not flist or os.path.getmtime(frng.decoder.__file__) > max(os.path.getmtime(file) for file in flist):
+            logging.warning(
+                "The 'decode()'-function has not been compiled yet. "
+                "This will take a few minutes (the time depends on your CPU and energy settings)."
+            )
+
+            dialog = QMessageBox()
+            dialog.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "numba-blue-icon-rgb.svg")))
+            dialog.setWindowTitle("Info")
+            dialog.setIcon(QMessageBox.Icon.Information)
+            dialog.setText(
+                "For the compitationally expensive decoding we make use of the just-in-time compiler Numba. "
+                "During the first execution, an initial compilation is executed. "
+                "This will take a few minutes (the time depends on your CPU and energy settings). "
+                "However, for any subsequent execution, the compiled code is cached "
+                "and the code of the function runs much faster, approaching the speeds of code written in C."
+            )
+            dialog.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+
+            button = dialog.exec()
+
+            if button == QMessageBox.StandardButton.Cancel:
+                return
+
         if hasattr(gui.con, "brightness"):
             delattr(gui.con, "brightness")
         if hasattr(gui.con, "modulation"):
@@ -397,25 +467,14 @@ def set_logic(gui):
         #     if hasattr(gui.con, key):
         #         delattr(gui.con, key)
 
+        view(None)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
         if hasattr(gui.con, gui.key):
             I = getattr(gui.con, gui.key)
-        # elif hasattr(gui.con, "raw"):
-        #     I = gui.con.raw
-        elif hasattr(gui.con, "fringes"):
+        else:
             I = gui.con.fringes
-
-        flist = glob.glob(os.path.join(os.path.dirname(frng.decoder.__file__), "__pycache__", "decoder*decode*.nbc"))
-        if flist and max(os.path.getmtime(file) for file in flist) < os.path.getmtime(__file__):
-            dialog = QMessageBox()
-            dialog.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "numba-blue-icon-rgb.svg")))
-            dialog.setWindowTitle("Info")
-            dialog.setIcon(QMessageBox.Icon.Information)
-            dialog.setText("For the compitationally expensive decoding we make use of the just-in-time compiler Numba. During the first execution, an initial compilation is executed. This can take several tens of seconds up to single digit minutes, depending on your CPU. However, for any subsequent execution, the compiled code is cached and the code of the function runs much faster, approaching the speeds of code written in C.")
-            dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
-            dialog.exec()
 
         with pg.BusyCursor():
             dec = gui.fringes.decode(I)
@@ -423,56 +482,126 @@ def set_logic(gui):
             for k, v in dec._asdict().items():
                 setattr(gui.con, k, v)
 
-            view(getattr(gui.con, "registration"))
+        view(gui.con.registration)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
-        gui.remap_button.setEnabled(gui.remapOK)
-        gui.remap_key.setEnabled(gui.remapOK)
+        gui.source_button.setEnabled(gui.sourceOK)
+        gui.source_key.setEnabled(gui.sourceOK)
         gui.curvature_button.setEnabled(gui.curvatureOK)
         gui.curvature_key.setEnabled(gui.curvatureOK)
         gui.set_button.setEnabled(gui.set_dataOK)
 
     gui.decode = decode
 
-    def remap():
+    def register():
+        encode(display=False)
+        decode()
+
+    def source():
         if hasattr(gui.con, "source"):
             delattr(gui.con, "source")
 
+        view(None)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
         with pg.BusyCursor():
             x = gui.con.registration
+
             if hasattr(gui.con, "modulation"):
                 B = gui.con.modulation
                 Bmin = 0
                 B[B < Bmin] = 0
             else:
                 B = None
-            mode = gui.fringes.mode  # todo
 
-            gui.con.source = gui.fringes.remap(x, B, mode=mode)
+            if hasattr(gui.con, "uncertainty"):
+                u = gui.con.uncertainty
+            else:
+                u = 0
 
-            gui.fringes.logger.info("Remapped.")
+            if hasattr(gui.fringes, "mode"):
+                mode = gui.fringes.mode
+            else:
+                mode = "fast"
 
-        view(getattr(gui.con, "source"))
+            gui.con.source = gui.fringes.source(x, B, u, mode=mode)
+
+        view(gui.con.source)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
+
+    def bright():
+        if hasattr(gui.con, "bright"):
+            delattr(gui.con, "bright")
+
+        view(None)
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
+
+        with pg.BusyCursor():
+            if hasattr(gui.con, "source"):
+                gui.con.bright = gui.fringes.brightfield(gui.con.source)
+
+                # gui.glogger.info("Bright-field.")
+                logger.info("Bright-field.")
+
+            view(gui.con.bright)
+            gui.data_table.setData(gui.con.info)
+            QtWidgets.QApplication.processEvents()  # refresh event queue
+
+    def bright_inverse():
+        if hasattr(gui.con, "bright_inverse"):
+            delattr(gui.con, "bright_inverse")
+
+        view(None)
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
+
+        with pg.BusyCursor():
+            if hasattr(gui.con, "source"):
+                gui.con.bright_inverse = gui.fringes.brightfield_inverse(gui.con.source)
+
+                # gui.glogger.info("Inverse bright-field.")
+                logger.info("Inverse bright-field.")
+
+            view(gui.con.bright_inverse)
+            gui.data_table.setData(gui.con.info)
+            QtWidgets.QApplication.processEvents()  # refresh event queue
+
+    def dark():
+        if hasattr(gui.con, "dark"):
+            delattr(gui.con, "dark")
+
+        view(None)
+        view(None)
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
+
+        with pg.BusyCursor():
+            if hasattr(gui.con, "source"):
+                gui.con.dark = gui.fringes.darkfield(gui.con.source)
+
+                # gui.glogger.info("Dark-field.")
+                logger.info("Dark-field.")
+
+            view(gui.con.dark)
+            gui.data_table.setData(gui.con.info)
+            QtWidgets.QApplication.processEvents()  # refresh event queue
 
     def curvature():
         if hasattr(gui.con, "curvature"):
             delattr(gui.con, "curvature")
 
+        view(None)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
         with pg.BusyCursor():
-            gui.con.curvature = frng.curvature(gui.con.registration)
+            gui.con.curvature = frng.curvature(gui.con.registration, normalize=True)
 
-            gui.fringes.logger.info("Computed curvature.")
-
-        view(getattr(gui.con, "curvature"))
+        view(gui.con.curvature)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
@@ -483,47 +612,28 @@ def set_logic(gui):
         if hasattr(gui.con, "height"):
             delattr(gui.con, "height")
 
+        view(None)
+        gui.data_table.setData(gui.con.info)
+        QtWidgets.QApplication.processEvents()  # refresh event queue
+
         with pg.BusyCursor():
             gui.con.height = frng.height(gui.con.curvature)
 
-            gui.fringes.logger.info("Computed height.")
-
-        view(getattr(gui.con, "height"))
+        view(gui.con.height)
         gui.data_table.setData(gui.con.info)
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
-        gui.data_table.setData(gui.con.info)
-        QtWidgets.QApplication.processEvents()  # refresh event queue
-
-    def view(I=None, Imax=None, autoscale=False, enhance=False, cmap=None):  # todo: color map
+    def view(I=None, autoscale=False, cmap=None):  # todo: color map
         """Display image data in videoshape in the ImageView area of the GUI."""
-        try:
-            T, Y, X, C = frng.vshape(I).shape
-        except:
-            T = Y = X = C = None
-
-        if enhance and I is not None and T == 1 and 3 <= C and I.dtype == "uint8":  # improve lightfield-inspection
-            try:
-                I[..., 1] = 0
-                hsv = cv2.cvtColor(I, cv2.COLOR_RGB2HSV)
-                hsv[..., 1] = 255  # 2
-                I = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
-            except:
-                pass
 
         if I is None or not isinstance(I, np.ndarray) or not I.size:
             gui.imv.clear()
         elif I.ndim < 2:
-            gui.fringes.logger.error(
-                "Can't display array with less than 2 dimensions."
-            )  # todo: convert into videoshape
+            logger.error("Can't display array with less than 2 dimensions.")
         elif I.ndim > 4:
-            gui.fringes.logger.error(
-                "Can't display array with more than 4 dimensions."
-            )  # todo: convert into videoshape
+            logger.error("Can't display array with more than 4 dimensions.")
         elif I.dtype.kind in "b":  # bool
             gui.imv.setImage(I, autoLevels=False, levels=(0, 1), autoHistogramRange=False)
-            # gui.plot.setLimits(xMin=0, xMax=X, yMin=0, yMax=Y)
         elif I.dtype.kind in "ui":  # uint or int
             if autoscale:
                 gui.imv.setImage(I)
@@ -533,9 +643,7 @@ def set_logic(gui):
                 else:
                     Imin = np.iinfo(I.dtype).min
 
-                if Imax is not None:
-                    Imax = int(Imax)
-                elif I.dtype.itemsize > 1:  # e.g. 16bit data may hold only 10bit or 12bit or 14bit information
+                if I.dtype.itemsize > 1:  # e.g. 16bit data may hold only 10bit or 12bit or 14bit information
                     if np.any(I > 2**10 - 1):  # 10-bit data
                         Imax = 2**10 - 1
                     elif np.any(I > 2**12 - 1):  # 12-bit data
@@ -548,15 +656,13 @@ def set_logic(gui):
                     Imax = np.iinfo(I.dtype).max
 
                 gui.imv.setImage(I, autoLevels=False, levels=(Imin, Imax), autoHistogramRange=False)
-                # gui.plot.setLimits(xMin=0, xMax=X, yMin=0, yMax=Y)
         elif I.dtype.kind in "f":  # float
-            try:
-                if np.isnan(np.amax(I)):
-                    I = I.astype(np.float32)  # copy
-                    I[np.isnan(I)] = 0
-                gui.imv.setImage(I.astype(np.float32, copy=False))  # it's faster for float32 than for float64
-            except:
-                gui.fringes.logger.error("Couldn't display float data.")
+            if np.nan in I:
+                I = I.astype(np.float32)  # copy
+                I[np.isnan(I)] = 0
+                logger.info("Converted `nan` in data to `0`.")
+
+            gui.imv.setImage(I)
 
             # if cmap:  # todo: define cmaps
             #     try:
@@ -575,17 +681,26 @@ def set_logic(gui):
             #         gui.imv.setColorMap(cmap)
             #     except:
             #         pass
+        elif I.dtype.kind in "c":
+            I = np.concatenate(np.abs(I), np.angle(I), axis=0)
 
-            # gui.plot.setLimits(xMin=0, xMax=X, yMin=0, yMax=Y)
+            if Np.nan in I:
+                I = I.astype(np.float32)  # copy
+                I[np.isnan(I)] = 0
+
+                logger.info("Converted `nan` in data to `0`.")
+
+            gui.imv.setImage(I)
         else:
-            gui.fringes.logger.error("Can't display array with dtype %s." % I.dtype)
+            logger.error("Can't display array with dtype %s." % I.dtype)
 
         QtWidgets.QApplication.processEvents()  # refresh event queue
 
     gui.view = view
 
     def zoomback():
-        pass  # todo: zoom back strg + 0
+        gui.win.setGeometry(QtGui.QGuiApplication.primaryScreen().availableGeometry())
+        gui.win.showMaximized()
 
     def selection_changed():
         """Display the data which was selected."""
@@ -624,9 +739,13 @@ def set_logic(gui):
     gui.encode_key.activated.connect(encode)
     gui.decode_button.clicked.connect(decode)
     gui.decode_key.activated.connect(decode)
+    gui.register_key.activated.connect(register)
 
-    gui.remap_button.clicked.connect(remap)
-    gui.remap_key.activated.connect(remap)
+    gui.source_button.clicked.connect(source)
+    gui.source_key.activated.connect(source)
+    gui.bright_key.activated.connect(bright)
+    gui.bright_inverse_key.activated.connect(bright_inverse)
+    gui.dark_key.activated.connect(dark)
     gui.curvature_button.clicked.connect(curvature)
     gui.curvature_key.activated.connect(curvature)
     gui.height_button.clicked.connect(height)

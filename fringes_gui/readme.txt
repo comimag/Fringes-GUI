@@ -1,6 +1,7 @@
 before publishing new version to pypi:
     # pytest
     version
+    version range for fringes
     lock
     black
     push

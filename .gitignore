@@ -131,3 +131,4 @@ dmypy.json
 *.bat
 *.ico
 *.lnk
+/fringes_gui/Xi.png

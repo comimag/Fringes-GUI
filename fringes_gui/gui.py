@@ -1,20 +1,20 @@
 import os
 import ctypes
-import logging as lg
+import logging
 import hashlib
 
 import numpy as np
-import fringes as frng
+import toml
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPlainTextEdit
 from pyqtgraph.Qt import QtGui, QtWidgets
 from pyqtgraph.dockarea import *
+import fringes as frng
 
 import fringes_gui
 from fringes_gui.setters import set_functionality
 
-# import pyqtgraph.examples
-# pyqtgraph.examples.run()
+logger = logging.getLogger(__name__)
 
 
 class FringesGUI(QApplication):
@@ -23,22 +23,26 @@ class FringesGUI(QApplication):
     def __init__(self):
         super(FringesGUI, self).__init__([])
 
-        myappid = "Fringes-GUI"  # arbitrary string
-        if fringes_gui.__version__:
-            myappid += f" {fringes_gui.__version__}"
+        pg.setConfigOptions(imageAxisOrder="row-major")  # useCupy slows the GUI down; useNUmba shows no effect
+        _meta = toml.load(os.path.join(os.path.dirname(__file__), "..", "pyproject.toml"))
+        name = _meta["tool"]["poetry"]["name"]
+        myappid = name + f" {fringes_gui.__version__}"  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-        pg.setConfigOptions(imageAxisOrder="row-major", useNumba=True)  # useCupy
-
-        self.fringes = frng.Fringes(X=1920, Y=1200)
-        self.fringes.logger.setLevel("INFO")  # should be the same as in logic.py
+        # fringes
+        self.fringes = frng.Fringes()  # (X=1920, Y=1200)
+        # fixme: in params, directions are abbreviated, in defaults not; therefore next line:
+        self.fringes2 = frng.Fringes()  # (X=1920, Y=1200)
         self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
         self.key = ""
-        try:
-            self.visibility = "Expert" if hashlib.sha256(os.getlogin().encode("utf-8")).hexdigest() == '095d9cc941ca4d5a84fe0a707391c05549faa500406b3a43a26f20fa7a1bcb25' else "Beginner"
-        except:
+        if (
+            hashlib.sha256(os.getlogin().encode("utf-8")).hexdigest()
+            == "095d9cc941ca4d5a84fe0a707391c05549faa500406b3a43a26f20fa7a1bcb25"
+        ):
+            self.visibility = "Expert"
+        else:
             self.visibility = "Beginner"
-        self.digits = 8  # todo: len(str(self.fringes._Pmax))  # 4 (digits) + 1 (point) + 3 (decimals) = 8 == current length of Pmax?
+        self.digits = 8  # todo: len(str(self.fringes._Pmax)) =?= 4 (digits) + 1 (point) + 3 (decimals) = 8
         self.sub = str.maketrans("1234567890", "₁₂₃₄₅₆₇₈₉₀")
         self.sup = str.maketrans("₁₂₃₄₅₆₇₈₉₀", "1234567890")
 
@@ -46,20 +50,19 @@ class FringesGUI(QApplication):
         self.win = QMainWindow()
         self.area = DockArea()
         self.win.setCentralWidget(self.area)
-
-        self.win.setGeometry(QtGui.QGuiApplication.primaryScreen().availableGeometry())  # move to primary screen
-        # if Screen.count == 1 and self.desktop.availableGeometry(idx).width() / self.desktop.availableGeometry(idx).height() >= 21 / 9:
-        #     self.win.resize(self.desktop.availableGeometry().width() // 2, self.desktop.availableGeometry().height())
-        #     # self.win.move(0, 0)  # move to the left
-        #     self.win.move(self.desktop.availableGeometry().width() // 2, 0)  # move to the right
-        # else:
-        #     self.win.showMaximized()  # self.win.showFullScreen()
-
-        self.win.showMaximized()  # self.win.showFullScreen()
-
-        self.win.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "spirals.png")))
-
+        self.win.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "Xi.svg")))
         self.win.setWindowTitle(myappid)
+        geo = QtGui.QGuiApplication.primaryScreen().availableGeometry()
+        W = geo.width()
+        H = geo.height()
+        S = len(QtGui.QGuiApplication.screens())
+        if S == 1 and W / H > 2:
+            self.win.resize(W // 2, H)
+            # self.win.move(0, 0)  # move to the left
+            self.win.move(W // 2, 0)  # move to the right
+        else:
+            self.win.setGeometry(geo)  # move to primary screen
+            self.win.showMaximized()
 
         # set style
         # self.setStyleSheet(open("QTDark.stylesheet").read())
@@ -75,9 +78,6 @@ class FringesGUI(QApplication):
         # qtmodern.styles.dark(self)
         # self.win = qtmodern.windows.ModernWindow(self.win)  # todo: moving window with win+arrow keys doesn't work
         # pg.setConfigOptions(background=42/255)
-
-        # Create docks, place them into the window one at a time.
-        from pyqtgraph.dockarea.Dock import DockLabel
 
         def updateStylePatched(
             self,
@@ -131,6 +131,8 @@ class FringesGUI(QApplication):
                 )
                 self.setStyleSheet(self.hStyle)
 
+        # Create docks, place them into the window one at a time.
+        from pyqtgraph.dockarea.Dock import DockLabel
         DockLabel.updateStyle = updateStylePatched
 
         self.dock_attributes = Dock("Attributes", size=(15, 99))
@@ -166,21 +168,25 @@ class FringesGUI(QApplication):
         self.decode_checkbox = QtWidgets.QCheckBox()
         self.decode_label = QtWidgets.QLabel("      Decode on parameter change")
         self.default_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+D"), self.win)
-        self.coordinates_key = QtGui.QShortcut(QtGui.QKeySequence("G"), self.win)
+        self.coordinates_key = QtGui.QShortcut(QtGui.QKeySequence("X"), self.win)
         self.encode_button = QtWidgets.QPushButton("Encode")
         self.encode_button.setToolTip("Press 'E'.")
-        self.encode_button.setStyleSheet("" if self.encodeOK else "QPushButton{color: red}")
+        self.encode_button.setStyleSheet("" if not self.fringes._ambiguous else "QPushButton{color: red}")
         self.encode_key = QtGui.QShortcut(QtGui.QKeySequence("E"), self.win)
         self.decode_button = QtWidgets.QPushButton("Decode")
         self.decode_button.setEnabled(False)
         self.decode_button.setToolTip("Press 'D'.")
         self.decode_key = QtGui.QShortcut(QtGui.QKeySequence("D"), self.win)
         self.decode_key.setEnabled(False)
-        self.remap_button = QtWidgets.QPushButton("Remap")
-        self.remap_button.setEnabled(False)
-        self.remap_button.setToolTip("Press 'R'.")
-        self.remap_key = QtGui.QShortcut(QtGui.QKeySequence("R"), self.win)
-        self.remap_key.setEnabled(False)
+        self.register_key = QtGui.QShortcut(QtGui.QKeySequence("R"), self.win)
+        self.source_button = QtWidgets.QPushButton("Source")
+        self.source_button.setEnabled(False)
+        self.source_button.setToolTip("Press 'S'.")
+        self.source_key = QtGui.QShortcut(QtGui.QKeySequence("S"), self.win)
+        self.source_key.setEnabled(False)
+        self.bright_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+B"), self.win)
+        self.bright_inverse_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+B"), self.win)
+        self.dark_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+D"), self.win)
         self.curvature_button = QtWidgets.QPushButton("Curvature")
         self.curvature_button.setEnabled(False)
         self.curvature_button.setToolTip("Press 'C'.")
@@ -198,24 +204,22 @@ class FringesGUI(QApplication):
         # self.dock_methods.addWidget(self.decode_checkbox, 2, 0, 1, 2)
         self.dock_methods.addWidget(self.encode_button, 3, 0)
         self.dock_methods.addWidget(self.decode_button, 3, 1)
-        self.dock_methods.addWidget(self.remap_button, 4, 0, 1, 2)
+        self.dock_methods.addWidget(self.source_button, 4, 0, 1, 2)
         self.dock_methods.addWidget(self.curvature_button, 5, 0)
         self.dock_methods.addWidget(self.height_button, 5, 1)
 
         # Viewer
-        self.zoomback_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+0"), self.win)  # todo
+        self.zoomback_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+0"), self.win)
 
         self.plot = pg.PlotItem()
         self.plot.setLabel(axis="left", text="y-axis")
         self.plot.setLabel(axis="bottom", text="x-axis")  # todo: set label 'T-axis'
+        # todo: plot.setTitle according to datum
         self.imv = pg.ImageView(view=self.plot)
         # self.imv.ui.histogram.hide()
         # self.imv.ui.roiBtn.hide()
         # self.imv.ui.menuBtn.hide()
         self.dock_viewer.addWidget(self.imv)
-
-        self.info = QtWidgets.QLabel()
-        self.dock_viewer.addWidget(self.info)
 
         # Data
         # self.data_tree = pg.DataTreeWidget()
@@ -225,7 +229,7 @@ class FringesGUI(QApplication):
                 QtWidgets.QTableWidget.__init__(self, *args)
                 self.resizeRowsToContents()
                 self.resizeColumnsToContents()
-                # self.setSelectionBehavior(QtWidgets.QTableView.selectRow)
+                # self.setSelectionBehavior(QtWidgets.QTableView.selectRow)  # todo
                 # self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
                 self.setColumnCount(3)
                 self.setRowCount(0)
@@ -238,12 +242,8 @@ class FringesGUI(QApplication):
                         newitem = QtWidgets.QTableWidgetItem(v)
                         self.setItem(i, j, newitem)
 
-                # self.resizeRowsToContents()
                 self.resizeColumnsToContents()
 
-        # self.display_selector = QtWidgets.QComboBox()
-        # self.display_selector.setPlaceholderText("Nothing")
-        # self.con = Container(self.display_selector)
         class Container:
             @property
             def info(self):
@@ -253,7 +253,6 @@ class FringesGUI(QApplication):
                 return info
 
         self.con = Container()
-        # self.dock_data.addWidget(self.display_selector, 0, 0)
 
         self.data_table = TableView()
         self.dock_data.addWidget(self.data_table, 1, 0, 1, 2)
@@ -277,25 +276,32 @@ class FringesGUI(QApplication):
         self.dock_data.addWidget(self.clear_button, 3, 0)
         self.dock_data.addWidget(self.set_button, 3, 1)
 
-        # self.model = QtWidgets.QFileSystemModel()
-        # self.model.setRootPath(self.data.dest)
-        # self.view = QtWidgets.QTreeView()
-        # self.view.setModel(self.model)
-        # self.view.setCurrentIndex(self.model.index(self.data.dest))
-        # self.view.setExpanded(self.model.index(self.data.dest), True)
-        # self.dock_data.addWidget(self.view, row=3, col=0)
-
-        # Log
-        class QPlainTextEditLogger(lg.Handler):
+        # logging
+        class QPlainTextEditLogger(logging.Handler):
             def emit(self, record):
                 self.widget.appendPlainText(self.format(record))
 
         self.log_widget = QPlainTextEdit()
         self.dock_log.addWidget(self.log_widget)
+
+        formatter = logging.Formatter("%(asctime)s %(levelname)-8s %(name)s.%(funcName)s(): %(message)s")
+
+        self.glogger = fringes_gui.logger  # parent logger
+        self.glogger.setLevel("INFO")
+
+        self.flogger = logging.getLogger("fringes")
+        self.flogger.setLevel("INFO")
+
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        self.glogger.addHandler(stream_handler)
+        self.flogger.addHandler(stream_handler)
+
         handler = QPlainTextEditLogger()
-        handler.setFormatter(self.fringes.logger.handlers[0].formatter)
+        handler.setFormatter(formatter)
         handler.widget = self.log_widget
-        self.fringes.logger.addHandler(handler)
+        self.glogger.addHandler(handler)
+        self.flogger.addHandler(handler)
 
         set_functionality(self)
 
@@ -329,12 +335,12 @@ class FringesGUI(QApplication):
     @property
     def resetOK(self):
         """True if params equal defalts."""
-        return self.fringes.params != frng.Fringes().params or self.visibility != "Expert"
+        return self.fringes.params != self.fringes2.params or self.visibility != "Expert"
 
-    @property
-    def encodeOK(self):
-        """True if unambiguous measurement range >= length."""
-        return not self.fringes._ambiguous
+    # @property
+    # def encodeOK(self):
+    #     """True if unambiguous measurement range >= length."""
+    #     return not self.fringes._ambiguous
 
     @property
     def dataOK(self):
@@ -354,14 +360,12 @@ class FringesGUI(QApplication):
             getattr(self.con, self.key)
             if hasattr(self.con, self.key)
             # else self.con.raw if hasattr(self.con, "raw")
-            else self.con.fringes
-            if hasattr(self.con, "fringes")
-            else None
+            else self.con.fringes if hasattr(self.con, "fringes") else None
         )
         return I is not None and hasattr(I, "ndim") and frng.vshape(I).shape[0] == self.fringes.T
 
     @property
-    def remapOK(self):
+    def sourceOK(self):
         """Returns True if modulation and registration is available."""
         return hasattr(self.con, "registration")
 

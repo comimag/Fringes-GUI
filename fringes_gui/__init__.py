@@ -1,19 +1,23 @@
-import importlib
+import logging
 import os
+import importlib
 
 import toml
 
-os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"  # https://github.com/opencv/opencv/issues/21326
-
 from .gui import FringesGUI
 
-try:  # PackageNotFoundError
-    fname = os.path.join(os.path.dirname(__file__), "..", "pyproject.toml")
-    version = toml.load(fname)["tool"]["poetry"]["version"]
-except FileNotFoundError or KeyError:
-    version = importlib.metadata.version("fringes_gui")
+logger = logging.getLogger(__name__)
 
-__version__ = version
+# use verion string in pyproject.toml as the single source of truth
+try:
+    # in order not to confuse an installed version of a package with a local one,
+    # first try the local one (not being installed)
+    _meta = toml.load(os.path.join(os.path.dirname(__file__), "..", "pyproject.toml"))
+    __version__ = _meta["project"]["version"]  # Python Packaging User Guide expects version here
+except KeyError:
+    __version__ = _meta["tool"]["poetry"]["version"]  # Poetry expects version here
+except FileNotFoundError:
+    __version__ = importlib.metadata.version("fringes")  # installed version
 
 
 def run():
