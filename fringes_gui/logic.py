@@ -60,10 +60,10 @@ loader = {**config, **image, **binary}
 def set_logic(gui):
     """Assigns functionality to the buttons and keys in the GUI."""
 
-    def immerse():
-        gui.immerse = not gui.immerse
+    def full_screen():
+        gui.full_screen = not gui.full_screen  # toggle
 
-        if gui.immerse:
+        if gui.full_screen:
             gui.win.showFullScreen()
         else:
             gui.win.showMaximized()
@@ -80,9 +80,15 @@ def set_logic(gui):
 
     def reset():
         with gui.params.treeChangeBlocker():
-            gui.params.param("vis").setValue("Expert")  # should be the same as in gui.py
             gui.fringes.reset()
             gui.fringes.save(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
+            if (
+                    hashlib.sha256(os.getlogin().encode("utf-8")).hexdigest()
+                    == "095d9cc941ca4d5a84fe0a707391c05549faa500406b3a43a26f20fa7a1bcb25"
+            ):
+                gui.params.param("vis").setValue("Expert")  # should be the same as in gui.py
+            else:
+                gui.params.param("vis").setValue("Beginner")  # should be the same as in gui.py
             gui.update_parameter_tree()
 
         clear()
@@ -716,7 +722,7 @@ def set_logic(gui):
             view(None)
 
     # assign functionality to buttons
-    gui.immerse_key.activated.connect(immerse)
+    gui.full_screen_key.activated.connect(full_screen)
 
     gui.undo_key.activated.connect(undo)
     gui.redo_key.activated.connect(redo)

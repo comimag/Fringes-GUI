@@ -150,8 +150,8 @@ class FringesGUI(QApplication):
         # Add widgets into each dock.
 
         # General settings
-        self.immerse = False
-        self.immerse_key = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+i"), self.win)
+        self.full_screen = False
+        self.full_screen_key = QtGui.QShortcut(QtGui.QKeySequence("F11"), self.win)
 
         self.tree = pg.parametertree.ParameterTree()
         self.dock_attributes.addWidget(self.tree)
