@@ -1,14 +1,13 @@
 import logging
 import os
-import importlib
-
 import toml
+import importlib
 
 from .gui import FringesGUI
 
 logger = logging.getLogger(__name__)
 
-# use verion string in pyproject.toml as the single source of truth
+# use version string in pyproject.toml as the single source of truth
 try:
     # in order not to confuse an installed version of a package with a local one,
     # first try the local one (not being installed)
@@ -17,7 +16,7 @@ try:
 except KeyError:
     __version__ = _meta["tool"]["poetry"]["version"]  # Poetry expects version here
 except FileNotFoundError:
-    __version__ = importlib.metadata.version("fringes")  # installed version
+    __version__ = importlib.metadata.version("fringes-gui")  # installed version
 
 
 def run():
