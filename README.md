@@ -2,8 +2,9 @@
 ![PyPI](https://img.shields.io/pypi/v/fringes-gui)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fringes-gui)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![PyPI - License](https://img.shields.io/pypi/l/fringes-gui)
 [![Read the Docs](https://img.shields.io/readthedocs/fringes)](https://fringes.readthedocs.io/en/latest/getting_started/usage.html#graphical-user-interface)
+![PyPI - License](https://img.shields.io/pypi/l/fringes-gui)
+[![Static Badge](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.10936353-blue)](https://zenodo.org/doi/10.5281/zenodo.10936353)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/fringes-gui)](https://pypistats.org/packages/fringes-gui)
 
 <!---
