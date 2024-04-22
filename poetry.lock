@@ -169,21 +169,23 @@ name = "fringes"
 version = "1.1.1"
 description = "Phase shifting algorithms for encoding and decoding sinusoidal fringe patterns."
 optional = false
-python-versions = "<3.13,>=3.9"
-files = [
-    {file = "fringes-1.1.1-py3-none-any.whl", hash = "sha256:9b3d76b56712bbfe9bc1ab971e1ad88d93adc9f8308a2d3b63b8d3ac36b96d76"},
-    {file = "fringes-1.1.1.tar.gz", hash = "sha256:20334c86a8bacca66bc615c1e220a0247bbc6148c6c0cf75ed355199e1ae3264"},
-]
+python-versions = "^3.9,<3.13"
+files = []
+develop = true
 
 [package.dependencies]
 numba = "0.59.0"
-numpy = ">=1.26.1,<2.0.0"
-opencv-contrib-python = ">=4.7.0,<5.0.0"
-pyyaml = ">=6.0,<7.0"
-scikit-image = ">=0.22.0,<0.23.0"
-scipy = ">=1.10.0,<2.0.0"
-sympy = ">=1.11.1,<2.0.0"
-toml = ">=0.10.2,<0.11.0"
+numpy = "^1.26.1"
+opencv-contrib-python = "^4.7.0"
+pyyaml = "^6.0"
+scikit-image = "^0.22.0"
+scipy = "^1.10.0"
+sympy = "^1.11.1"
+toml = "^0.10.2"
+
+[package.source]
+type = "directory"
+url = "../fringes"
 
 [[package]]
 name = "h5py"
@@ -220,13 +222,13 @@ numpy = ">=1.17.3"
 
 [[package]]
 name = "imageio"
-version = "2.34.0"
+version = "2.34.1"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "imageio-2.34.0-py3-none-any.whl", hash = "sha256:08082bf47ccb54843d9c73fe9fc8f3a88c72452ab676b58aca74f36167e8ccba"},
-    {file = "imageio-2.34.0.tar.gz", hash = "sha256:ae9732e10acf807a22c389aef193f42215718e16bd06eed0c5bb57e1034a4d53"},
+    {file = "imageio-2.34.1-py3-none-any.whl", hash = "sha256:408c1d4d62f72c9e8347e7d1ca9bc11d8673328af3913868db3b828e28b40a4c"},
+    {file = "imageio-2.34.1.tar.gz", hash = "sha256:f13eb76e4922f936ac4a7fec77ce8a783e63b93543d4ea3e40793a6cabd9ac7d"},
 ]
 
 [package.dependencies]
@@ -614,13 +616,13 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-
 
 [[package]]
 name = "pluggy"
-version = "1.4.0"
+version = "1.5.0"
 description = "plugin and hook calling mechanisms for python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pluggy-1.4.0-py3-none-any.whl", hash = "sha256:7db9f7b503d67d1c5b95f59773ebb58a8c1c288129a88665838012cfb07b8981"},
-    {file = "pluggy-1.4.0.tar.gz", hash = "sha256:8c85c2876142a764e5b7548e7d9a0e0ddb46f5185161049a79b7e974454223be"},
+    {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
+    {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
 ]
 
 [package.extras]
@@ -691,13 +693,13 @@ files = [
 
 [[package]]
 name = "pyqtgraph"
-version = "0.13.4"
+version = "0.13.6"
 description = "Scientific Graphics and GUI Library for Python"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pyqtgraph-0.13.4-py3-none-any.whl", hash = "sha256:1dc9a786aa43cd787114366058dc3b4b8cb96a0e318f334720c7e6cc6c285940"},
-    {file = "pyqtgraph-0.13.4.tar.gz", hash = "sha256:67b0d371405c4fd5f35afecfeb37d4b73bc118f187c52a965ed68d62f59b67b3"},
+    {file = "pyqtgraph-0.13.6-py3-none-any.whl", hash = "sha256:35740eb7e5908e490c6e06ef6ef15738dfba27ee35b0b0417638d515da6f9226"},
+    {file = "pyqtgraph-0.13.6.tar.gz", hash = "sha256:2397a2197e7ac66920329bf28fb346b038d85a351f8988ccc806ffb79d11573d"},
 ]
 
 [package.dependencies]
@@ -972,4 +974,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "c4d358515e4448a9cc7dda34f8d106cc94ae94ddd269a44eba79003f1cbd2926"
+content-hash = "240613cd1010287f0d14968e5bf14881962039bde5f229685c1c0aff785e8fb2"

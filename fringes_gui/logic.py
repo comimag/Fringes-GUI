@@ -1,10 +1,10 @@
 import logging
 import functools
 import os
-
 # os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"  # todo: exr, in put this line in __init__?
 import glob
 import ast
+import hashlib
 
 import numpy as np
 

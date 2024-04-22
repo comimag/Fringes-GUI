@@ -30,8 +30,8 @@ opencv-contrib-python = "^4.7.0"
 asdf = "^3.0.1"
 h5py = "^3.9.0"
 toml = "^0.10.2"
-fringes = "~1.1"  # todo: check versions
-# fringes = {path = "../fringes", develop = true}
+#fringes = "~1.1"  # todo: check versions
+fringes = {path = "../fringes", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"

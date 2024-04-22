@@ -1,6 +1,6 @@
+import logging
 import os
 import ctypes
-import logging
 import hashlib
 
 import numpy as np
@@ -33,7 +33,9 @@ class FringesGUI(QApplication):
         self.fringes = frng.Fringes()  # (X=1920, Y=1200)
         # fixme: in params, directions are abbreviated, in defaults not; therefore next line:
         self.fringes2 = frng.Fringes()  # (X=1920, Y=1200)
-        self.fringes.load(os.path.join(os.path.expanduser("~"), ".fringes.yaml"))
+        fname = os.path.join(os.path.expanduser("~"), ".fringes.yaml")
+        if os.path.isfile(fname):
+            self.fringes.load(fname)
         self.key = ""
         if (
             hashlib.sha256(os.getlogin().encode("utf-8")).hexdigest()
